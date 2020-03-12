@@ -1,0 +1,28 @@
+﻿@using System.Globalization
+@using Plachta.Shared.BO
+
+<div class="aktivita-components" style="background: honeydew; height: 200px; width: @((Aktivita?.Trvanie.TotalMinutes ?? 60) * 6)px">
+@foreach (var item in Aktivita.AktivitaItems)
+{
+    <div class="aktivita-component" style="top: @item.Y.ToString("N", CultureInfo.InvariantCulture)%; left: @item.X.ToString("N", CultureInfo.InvariantCulture)%; width: @item.Width.ToString("N", CultureInfo.InvariantCulture)%; height: @item.Height.ToString("N", CultureInfo.InvariantCulture)%;">
+
+    </div>
+}
+</div>
+
+<hr />
+<div class="dropdown">
+    <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-plus"></i>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="#">Text</a>
+        <a class="dropdown-item" href="#">Obrázok</a>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Aktivita Aktivita { get; set; }
+}

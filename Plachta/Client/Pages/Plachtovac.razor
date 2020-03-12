@@ -1,0 +1,163 @@
+﻿@page "/plachtovac"
+@using BlazorContextMenu
+@using Blazorise
+@using Plachta.Shared.BO;
+@using Plachta.Client.Components;
+
+<style type="text/css">
+    #plachtaUi {
+        position: relative;
+    }
+
+    #plachta-view {
+        background-color: ghostwhite;
+        border: 1px solid black;
+        width: 85%;
+        position: relative;
+        display: inline-block;
+    }
+
+    #sablony {
+        background-color: khaki;
+        width: 14%;
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
+    .den {
+        min-height: 100px;
+        margin: 1px;
+        position: relative;
+    }
+
+        .den .title {
+            background: red;
+            width: 50px;
+            height: 100%;
+            position: absolute;
+            writing-mode: vertical-rl;
+            transform: rotate(-180deg);
+            text-align: center;
+        }
+
+    .aktivity {
+        width: calc(100% - 52px);
+        position: absolute;
+        background-color: aquamarine;
+        height: 100%;
+        left: 51px;
+    }
+
+    .aktivita {
+        height: 100%;
+        position: absolute;
+        background-color: darkorchid;
+    }
+
+    .dropdown-placeholder {
+        height: 100%;
+        position: absolute;
+        border: 2px dotted black;
+        display: none;
+    }
+
+    .aktivita-components {
+        position: relative;
+    }
+
+    .aktivita-component {
+        position: absolute;
+        border: 1px solid black;
+    }
+</style>
+
+<h3>Plachta</h3>
+<button @onclick="PridajDen">Pridaj den</button>
+<button @onclick="OdoberDen">Odober den</button>
+<div id="plachtaUi">
+    <CascadingValue Value="this">
+        <div id="plachta-view">
+            @foreach (var den in Rozvrh.Dni)
+            {
+                <PlachtaDenView Den="den"></PlachtaDenView>
+            }
+        </div>
+        <div id="sablony">
+            <SablonyAktivityView></SablonyAktivityView>
+        </div>
+    </CascadingValue>
+</div>
+
+<ContextMenu Id="myMenu">
+    <Item OnClick="@DeleteActivity"><i class="fas fa-trash-alt red-icon"></i> Delete</Item>
+    <Item OnClick="@EditActivity"><i class="fas fa-edit"></i> Edit</Item>
+</ContextMenu>
+
+<Modal @ref="modalRef">
+    <ModalBackdrop />
+    <ModalContent IsCentered="true">
+        <ModalHeader>
+            <ModalTitle>Editacia aktivity - @EditovanaAktivita?.Nazov</ModalTitle>
+            <CloseButton Clicked="@HideModal" />
+        </ModalHeader>
+        <ModalBody>
+            @if (EditovanaAktivita != null)
+            {
+                <AktivitaDesignerView Aktivita="EditovanaAktivita"></AktivitaDesignerView>
+            }
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+            <Button Color="Color.Primary" Clicked="@HideModal">Save Changes</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+
+@code {
+    private Aktivita EditovanaAktivita = null;
+
+    public PlachtaAktivitaView SelectedAktivita { get; set; }
+
+    public Rozvrh Rozvrh { get; } = new Rozvrh();
+
+    // reference to the modal component
+    private Modal modalRef;
+
+    public void PridajDen()
+    {
+        Rozvrh.PridajDen();
+    }
+
+    public void OdoberDen()
+    {
+        Rozvrh.OdoberDen();
+    }
+
+    void DeleteActivity(ItemClickEventArgs e)
+    {
+        Console.WriteLine("Mazem");
+        var aktivita = e.Data as Aktivita;
+        Rozvrh.OdstranAktivitu(aktivita);
+    }
+
+    void EditActivity(ItemClickEventArgs e)
+    {
+        var aktivita = e.Data as Aktivita;
+        EditovanaAktivita = aktivita;
+        ShowModal();
+    }
+
+
+    private void ShowModal()
+    {
+        modalRef.Show();
+    }
+
+    private void HideModal()
+    {
+        modalRef.Hide();
+    }
+}

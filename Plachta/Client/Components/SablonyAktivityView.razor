@@ -1,0 +1,66 @@
+﻿@using Blazorise
+@using Plachta.Client.Helpers
+@using Plachta.Client.Pages
+@using Plachta.Shared.BO
+<h4>SablonyAktivity</h4>
+
+<button class="btn btn-info" @onclick="ShowModal">Pridaj</button>
+<ul>
+    @foreach (var sablona in Plachtovac.Rozvrh.SablonyAktivit)
+    {
+        <li draggable="true" @ondragstart="e => HandleDragStart(e, sablona)">@sablona.Nazov</li>
+    }
+</ul>
+
+<Modal @ref="modalRef">
+    <ModalBackdrop />
+    <ModalContent IsCentered="true">
+        <ModalHeader>
+            <ModalTitle>Employee edit</ModalTitle>
+            <CloseButton Clicked="@HideModal" />
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <FieldLabel>Name</FieldLabel>
+                <TextEdit @bind-Text="@name" Placeholder="Name" />
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+            <Button Color="Color.Primary" Clicked="@Save">Save Changes</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [CascadingParameter] Plachtovac Plachtovac { get; set; }
+
+    // reference to the modal component
+    private Modal modalRef;
+
+    private string name;
+
+    private void ShowModal()
+    {
+        modalRef.Show();
+    }
+
+    private void HideModal()
+    {
+        modalRef.Hide();
+    }
+
+    private void Save()
+    {
+        modalRef.Hide();
+        Plachtovac.Rozvrh.SablonyAktivit.Add(new AktivitaSablona{ Nazov = name});
+        name = "";
+    }
+
+    public async Task HandleDragStart(MouseEventArgs args, AktivitaSablona sablona)
+    {
+        var rnd = new Random();
+        Plachtovac.SelectedAktivita = new PlachtaAktivitaView();
+        Plachtovac.SelectedAktivita.Aktivita = new Aktivita() {Trvanie = new TimeSpan(rnd.Next(0,3), rnd.Next(30, 59), 0), Time = new TimeSpan(12, 0, 0), Sablona = sablona };
+    }
+}

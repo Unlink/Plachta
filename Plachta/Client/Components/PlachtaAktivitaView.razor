@@ -1,0 +1,34 @@
+﻿@using System.Globalization
+@using System.Reflection
+@using Plachta.Client.Helpers
+@using Plachta.Client.Pages;
+@using Plachta.Shared.BO;
+
+@inject IJSRuntime JSRuntime
+
+<div @ref="AktivitaHtmlElement" class="aktivita" draggable="true" @ondragstart="e => HandleDragStart(e)" style="left:@Pozicia.ToString("N",CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N",CultureInfo.InvariantCulture)%">
+    @Aktivita.Nazov
+</div>
+
+
+@code {
+    [CascadingParameter] Plachtovac Plachtovac { get; set; }
+
+    [Parameter]
+    public Aktivita Aktivita { get; set; }
+
+    public double Pozicia => ((Aktivita.Time.TotalMinutes - (8 * 60)) / (12 * 60)) * 100;
+
+    public double Trvanie => (Aktivita.Trvanie.TotalMinutes / (12 * 60)) * 100;
+
+    public double SelectionOffset { get; private set; }
+
+    ElementReference AktivitaHtmlElement;
+
+    public async Task HandleDragStart(MouseEventArgs args)
+    {
+        Plachtovac.SelectedAktivita = this;
+        var aktivitaBoundingBox = await JSRuntime.InvokeAsync<BoundingClientRect>("Plachtovac.getBoundingClientRect", AktivitaHtmlElement);
+        SelectionOffset = args.ClientX - aktivitaBoundingBox.x;
+    }
+}
