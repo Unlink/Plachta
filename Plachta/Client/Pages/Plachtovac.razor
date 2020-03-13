@@ -12,24 +12,44 @@
     #plachta-view {
         background-color: ghostwhite;
         border: 1px solid black;
-        width: 85%;
+        width: calc(100% - 160px);
         position: relative;
         display: inline-block;
     }
 
+        #plachta-view > div {
+            width: 100%;
+            padding-bottom: 71%;
+            background: gold;
+            position: relative;
+        }
+
+            #plachta-view > div > div {
+                top: 0;
+                bottom: 0;
+                position: absolute;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
     #sablony {
-        background-color: khaki;
-        width: 14%;
+        width: 150px;
         display: inline-block;
         position: absolute;
         top: 0;
         right: 0;
     }
 
+        #sablony .card-body,
+        #sablony .card-header {
+            padding: 5px;
+        }
+
     .den {
-        min-height: 100px;
         margin: 1px;
         position: relative;
+        flex: 1;
     }
 
         .den .title {
@@ -63,29 +83,52 @@
         display: none;
     }
 
-    .aktivita-components {
+    .aktivita svg {
+        height: 100%;
+        width: 100%;
+    }
+
+    /*.aktivita-components {
         position: relative;
     }
 
     .aktivita-component {
         position: absolute;
         border: 1px solid black;
-    }
+    }*/
 </style>
 
 <h3>Plachta</h3>
-<button @onclick="PridajDen">Pridaj den</button>
-<button @onclick="OdoberDen">Odober den</button>
+
+
 <div id="plachtaUi">
     <CascadingValue Value="this">
         <div id="plachta-view">
-            @foreach (var den in Rozvrh.Dni)
-            {
-                <PlachtaDenView Den="den"></PlachtaDenView>
-            }
+            <div>
+                <div>
+                    @foreach (var den in Rozvrh.Dni)
+                    {
+                        <PlachtaDenView Den="den"></PlachtaDenView>
+                    }
+                </div>
+            </div>
         </div>
         <div id="sablony">
-            <SablonyAktivityView></SablonyAktivityView>
+            <div class="card">
+                <div class="card-header">Nastavenia</div>
+                <div class="card-body">
+                    <TextEdit type="time" TextChanged="TimeChanged" />
+                    <Button Color="Color.Primary" @onclick="PridajDen">Pridaj den</Button>
+                    <Button Color="Color.Dark" @onclick="OdoberDen">Odober den</Button>
+                </div>
+            </div>
+            <br />
+            <div class="card">
+                <div class="card-header">Šablóny</div>
+                <div class="card-body">
+                    <SablonyAktivityView></SablonyAktivityView>
+                </div>
+            </div>
         </div>
     </CascadingValue>
 </div>
@@ -148,6 +191,11 @@
         var aktivita = e.Data as Aktivita;
         EditovanaAktivita = aktivita;
         ShowModal();
+    }
+
+    void TimeChanged(string val)
+    {
+        Console.WriteLine(val);
     }
 
 

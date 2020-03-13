@@ -14,6 +14,9 @@ namespace Plachta.Shared.BO
 
         public LinkedList<Den> Dni { get; } = new LinkedList<Den>();
 
+        public TimeSpan ZaciatokDna { get; set; }
+        public TimeSpan KoniecDna { get; set; }
+
         public int PocetDni => Dni.Count;
 
         public void PridajDen()
