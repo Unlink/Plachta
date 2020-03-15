@@ -1,29 +1,38 @@
-﻿@using System.Globalization
-@using System.Reflection
+﻿@using System.ComponentModel
+@using System.Globalization
 @using Plachta.Client.Helpers
 @using Plachta.Client.Pages;
 @using Plachta.Shared.BO;
 
+@implements IDisposable
+
 @inject IJSRuntime JSRuntime
 
-<div @ref="AktivitaHtmlElement" class="aktivita" draggable="true" @ondragstart="e => HandleDragStart(e)" style="left:@Pozicia.ToString("N",CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N",CultureInfo.InvariantCulture)%">
-    @((MarkupString)Aktivita.Design)
+<div @ref="AktivitaHtmlElement" class="aktivita" draggable="true"
+      @ondragstart="e => HandleDragStart(e)"
+      style="left: @Pozicia.ToString("N", CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N", CultureInfo.InvariantCulture)%">
+    @((MarkupString) Aktivita.Sablona.Design)
+    @if (Aktivita.ZobrazCas)
+    {
+        <span class="aktivitaTime">@Aktivita.Time.ToString(@"hh\:mm")</span>
+    }
 </div>
 
 
 @code {
-    [CascadingParameter] Plachtovac Plachtovac { get; set; }
+    ElementReference AktivitaHtmlElement;
+
+    [CascadingParameter]
+    public Plachtovac Plachtovac { get; set; }
 
     [Parameter]
     public Aktivita Aktivita { get; set; }
 
-    public double Pozicia => ((Aktivita.Time.TotalMinutes - (8 * 60)) / (12 * 60)) * 100;
+    public double Pozicia => ((Aktivita.Time.TotalMinutes - Plachtovac.Rozvrh.ZaciatokDna.TotalMinutes) / (Plachtovac.Rozvrh.KoniecDna.TotalMinutes - Plachtovac.Rozvrh.ZaciatokDna.TotalMinutes)) * 100;
 
-    public double Trvanie => (Aktivita.Trvanie.TotalMinutes / (12 * 60)) * 100;
+    public double Trvanie => (Aktivita.Trvanie.TotalMinutes / (Plachtovac.Rozvrh.KoniecDna.TotalMinutes - Plachtovac.Rozvrh.ZaciatokDna.TotalMinutes)) * 100;
 
     public double SelectionOffset { get; private set; }
-
-    ElementReference AktivitaHtmlElement;
 
     public async Task HandleDragStart(MouseEventArgs args)
     {
@@ -32,17 +41,20 @@
         SelectionOffset = args.ClientX - aktivitaBoundingBox.x;
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override void OnInitialized()
     {
-        base.OnAfterRender(firstRender);
-        if (firstRender)
-        {
-            Aktivita.PropertyChanged += (sender, args) =>
-            {
-                Console.WriteLine("Called state changed");
-                StateHasChanged();
-            };
-        }
+        base.OnInitialized();
+        Aktivita.PropertyChanged += AktivitaOnPropertyChanged;
+    }
+
+    private void AktivitaOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Aktivita.PropertyChanged -= AktivitaOnPropertyChanged;
     }
 
 }

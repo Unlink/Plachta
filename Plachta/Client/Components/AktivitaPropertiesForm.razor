@@ -1,0 +1,125 @@
+﻿@using Blazorise
+@using Plachta.Client.Helpers
+@using Plachta.Shared.Annotations
+@using Plachta.Shared.BO
+
+<Validations Mode="ValidationMode.Manual" @ref="validations">
+    <Field>
+        <FieldLabel>Čas aktivity</FieldLabel>
+        <Validation Validator="ValidateActivityStart">
+            <TextEdit Text="@time" TextChanged="@OnTimeChanged" type="time">
+                <Feedback>
+                    <ValidationError />
+                </Feedback>
+            </TextEdit>
+        </Validation>
+    </Field>
+    <Field>
+        <FieldLabel>Trvanie <span class="small">(v minutach)</span></FieldLabel>
+        <Validation Validator="ValidateActivityStart">
+            <NumericEdit TValue="int" Value="@trvanieAktivity" ValueChanged="@OnDurationChanged">
+                <Feedback>
+                    <ValidationError />
+                </Feedback>
+            </NumericEdit>
+        </Validation>
+    </Field>
+    <Field>
+        <CheckEdit @bind-Checked="@hasTimeBadge">Zobraziť čas</CheckEdit>
+    </Field>
+    <Field>
+        <CheckEdit @bind-Checked="@hasVeduciPreAktivitu">Veduci pre aktivitu</CheckEdit>
+    </Field>
+</Validations>
+@if (hasVeduciPreAktivitu)
+{
+    <VeduciAssignForm @ref="assignForm" Rozvrh="@Rozvrh" PriradenyVeduci="@Veduci"></VeduciAssignForm>
+}
+
+<button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
+<button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+
+@code {
+    VeduciAssignForm assignForm;
+    Validations validations;
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public Aktivita Aktivita { get; set; }
+
+    [Parameter]
+    public Rozvrh Rozvrh { get; set; }
+
+    private List<AktivitaVeduci> Veduci => Aktivita.Veduci;
+
+    private string time;
+    private int trvanieAktivity;
+
+    private bool hasVeduciPreAktivitu;
+    private bool hasTimeBadge;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        trvanieAktivity = (int)Aktivita.Trvanie.TotalMinutes;
+        time = Aktivita.Time.ToString(@"hh\:mm");
+        hasTimeBadge = Aktivita.ZobrazCas;
+        hasVeduciPreAktivitu = Aktivita.Veduci != null;
+    }
+
+    void OnTimeChanged(string value)
+    {
+        time = value;
+        validations.ValidateAll();
+    }
+
+    void OnDurationChanged(int value)
+    {
+        trvanieAktivity = value;
+        validations.ValidateAll();
+    }
+
+    void ValidateActivityStart(ValidatorEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(Convert.ToString(e.Value)))
+        {
+            e.Status = ValidationStatus.Error;
+            e.ErrorText = null;
+        }
+        else if (Rozvrh.Koliduje(Aktivita, Converters.FromTimeStr(time), new TimeSpan(trvanieAktivity / 60, trvanieAktivity % 60, 0)))
+        {
+            e.Status = ValidationStatus.Error;
+            e.ErrorText = "Aktivita koliduje s inou aktivitou";
+        }
+        else
+        {
+            e.Status = ValidationStatus.Success;
+            validations.ClearAll();
+        }
+    }
+
+    void SubmitForm()
+    {
+        if (validations.ValidateAll())
+        {
+            Aktivita.Time = Converters.FromTimeStr(time);
+            Aktivita.Trvanie = new TimeSpan(trvanieAktivity / 60, trvanieAktivity % 60, 0);
+            if (hasVeduciPreAktivitu) {
+                Aktivita.Veduci = new List<AktivitaVeduci>(assignForm.GetResult());
+            }
+            else
+            {
+                Aktivita.Veduci = null;
+            }
+            Aktivita.ZobrazCas = hasTimeBadge;
+
+            BlazoredModal.Close(ModalResult.Ok(Aktivita));
+        }
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
+    }
+}

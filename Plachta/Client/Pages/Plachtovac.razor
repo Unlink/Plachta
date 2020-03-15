@@ -1,104 +1,17 @@
 ﻿@page "/plachtovac"
+@using System.Text.Json
 @using BlazorContextMenu
-@using Blazorise
 @using Plachta.Shared.BO;
 @using Plachta.Client.Components;
+@using Blazorise;
+@using Newtonsoft.Json
 
-<style type="text/css">
-    #plachtaUi {
-        position: relative;
-    }
-
-    #plachta-view {
-        background-color: ghostwhite;
-        border: 1px solid black;
-        width: calc(100% - 160px);
-        position: relative;
-        display: inline-block;
-    }
-
-        #plachta-view > div {
-            width: 100%;
-            padding-bottom: 71%;
-            background: gold;
-            position: relative;
-        }
-
-            #plachta-view > div > div {
-                top: 0;
-                bottom: 0;
-                position: absolute;
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-            }
-
-    #sablony {
-        width: 150px;
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        right: 0;
-    }
-
-        #sablony .card-body,
-        #sablony .card-header {
-            padding: 5px;
-        }
-
-    .den {
-        margin: 1px;
-        position: relative;
-        flex: 1;
-    }
-
-        .den .title {
-            background: red;
-            width: 50px;
-            height: 100%;
-            position: absolute;
-            writing-mode: vertical-rl;
-            transform: rotate(-180deg);
-            text-align: center;
-        }
-
-    .aktivity {
-        width: calc(100% - 52px);
-        position: absolute;
-        background-color: aquamarine;
-        height: 100%;
-        left: 51px;
-    }
-
-    .aktivita {
-        height: 100%;
-        position: absolute;
-        background-color: darkorchid;
-    }
-
-    .dropdown-placeholder {
-        height: 100%;
-        position: absolute;
-        border: 2px dotted black;
-        display: none;
-    }
-
-    .aktivita svg {
-        height: 100%;
-        width: 100%;
-    }
-
-    /*.aktivita-components {
-        position: relative;
-    }
-
-    .aktivita-component {
-        position: absolute;
-        border: 1px solid black;
-    }*/
-</style>
-
+@inject IModalService Modal
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 <h3>Plachta</h3>
+
+<Button @onclick="SaveData">Save</Button>
+<Button @onclick="LoadData">Load</Button>
 
 
 <div id="plachtaUi">
@@ -113,75 +26,77 @@
                 </div>
             </div>
         </div>
-        <div id="sablony">
-            <div class="card">
-                <div class="card-header">Nastavenia</div>
-                <div class="card-body">
-                    <TextEdit type="time" TextChanged="TimeChanged" />
-                    <Button Color="Color.Primary" @onclick="PridajDen">Pridaj den</Button>
-                    <Button Color="Color.Dark" @onclick="OdoberDen">Odober den</Button>
+
+        <div id="plachtaToolBar">
+            <div class="accordion">
+                <div class="card">
+                    <div class="card-header" id="headingAktivity" data-toggle="collapse" data-target="#aktivity_sablony">
+                        Aktivity
+                    </div>
+
+                    <div id="aktivity_sablony" class="collapse" data-parent=".accordion">
+                        <div class="card-body">
+                            <SablonyAktivityView></SablonyAktivityView>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <br />
-            <div class="card">
-                <div class="card-header">Šablóny</div>
-                <div class="card-body">
-                    <SablonyAktivityView></SablonyAktivityView>
+                <div class="card">
+                    <div class="card-header" id="headingVeduci" data-toggle="collapse" data-target="#veduci_list">
+                        Vedúci
+                    </div>
+                    <div id="veduci_list" class="collapse" aria-labelledby="headingVeduci" data-parent=".accordion">
+                        <div class="card-body">
+                            <Button class="btn btn-primary btn-sm" @onclick="PridajVeduceho">Pridaj vedúceho</Button><br />
+                            @foreach (var veduci in Rozvrh.Veduci)
+                            {
+                                <Addons>
+                                    <Addon AddonType="AddonType.Body">
+                                        <TextEdit IsPlaintext="true" IsReadonly="true" @bind-Text="@veduci.Prezyvka"></TextEdit>
+                                    </Addon>
+                                    <Addon AddonType="AddonType.End">
+                                        <Buttons>
+                                            <Button class="btn btn-sm" @onclick="() => EditujVeduceho(veduci)"><i class="text-primary fas fa-user-edit"></i></Button>
+                                            <Button class="btn btn-sm" @onclick="() => ZmazVeduceho(veduci)"><i class="text-danger fas fa-user-minus"></i></Button>
+                                        </Buttons>
+                                    </Addon>
+                                </Addons>
+
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header" id="headingRozvrh" data-toggle="collapse" data-target="#rozvrh_info">
+                        Rozvrh
+                    </div>
+                    <div id="rozvrh_info" class="collapse" aria-labelledby="headingRozvrh" data-parent=".accordion">
+                        <div class="card-body small">
+                            Počet dní: @Rozvrh.Dni.Count<br />
+                            Začiatočný deň: @Rozvrh.ZaciatokStr<br />
+                            Začiatok dňa: @Rozvrh.ZaciatokDna<br />
+                            Koniec dňa: @Rozvrh.KoniecDna<br />
+                            <button @onclick="NastaveniaRozvrhu" class="btn btn-primary btn-sm">Uprav nastavenia</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </CascadingValue>
 </div>
 
-<ContextMenu Id="myMenu">
+<ContextMenu Id="aktivitaContextMenu">
     <Item OnClick="@DeleteActivity"><i class="fas fa-trash-alt red-icon"></i> Delete</Item>
     <Item OnClick="@EditActivity"><i class="fas fa-edit"></i> Edit</Item>
 </ContextMenu>
 
-<Modal @ref="modalRef">
-    <ModalBackdrop />
-    <ModalContent IsCentered="true">
-        <ModalHeader>
-            <ModalTitle>Editacia aktivity - @EditovanaAktivita?.Nazov</ModalTitle>
-            <CloseButton Clicked="@HideModal" />
-        </ModalHeader>
-        <ModalBody>
-            @if (EditovanaAktivita != null)
-            {
-                <AktivitaDesignerView Aktivita="EditovanaAktivita"></AktivitaDesignerView>
-            }
-        </ModalBody>
-        <ModalFooter>
-            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
-            <Button Color="Color.Primary" Clicked="@HideModal">Save Changes</Button>
-        </ModalFooter>
-    </ModalContent>
-</Modal>
-
 
 @code {
-    private Aktivita EditovanaAktivita = null;
-
     public PlachtaAktivitaView SelectedAktivita { get; set; }
 
-    public Rozvrh Rozvrh { get; } = new Rozvrh();
-
-    // reference to the modal component
-    private Modal modalRef;
-
-    public void PridajDen()
-    {
-        Rozvrh.PridajDen();
-    }
-
-    public void OdoberDen()
-    {
-        Rozvrh.OdoberDen();
-    }
+    public Rozvrh Rozvrh { get; private set; } = new Rozvrh() {ZaciatokDna = new TimeSpan(8,0,0), KoniecDna = new TimeSpan(22,0,0)};
 
     void DeleteActivity(ItemClickEventArgs e)
     {
-        Console.WriteLine("Mazem");
         var aktivita = e.Data as Aktivita;
         Rozvrh.OdstranAktivitu(aktivita);
     }
@@ -189,23 +104,71 @@
     void EditActivity(ItemClickEventArgs e)
     {
         var aktivita = e.Data as Aktivita;
-        EditovanaAktivita = aktivita;
-        ShowModal();
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(AktivitaPropertiesForm.Aktivita), aktivita);
+        parameters.Add(nameof(AktivitaPropertiesForm.Rozvrh), Rozvrh);
+        Modal.Show<AktivitaPropertiesForm>($"Aktivita {aktivita.Nazov}", parameters);
     }
 
-    void TimeChanged(string val)
+    async Task NastaveniaRozvrhu()
     {
-        Console.WriteLine(val);
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(RozvrhNastaveniaView.Rozvrh), Rozvrh);
+        var modal = Modal.Show<RozvrhNastaveniaView>("Nastavenia rozvrhu", parameters);
+        await modal.Result;
+        Console.WriteLine("Modal closed");
     }
 
-
-    private void ShowModal()
+    async Task PridajVeduceho()
     {
-        modalRef.Show();
+        var modal = Modal.Show<PridajVeducehoForm>("Pridaj vedúceho");
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+            Rozvrh.Veduci.Add((Veduci) result.Data);
+        }
     }
 
-    private void HideModal()
+    async Task EditujVeduceho(Veduci veduci)
     {
-        modalRef.Hide();
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(PridajVeducehoForm.Veduci), veduci);
+        var modal = Modal.Show<PridajVeducehoForm>("Uprav vedúceho", parameters);
+        var result = await modal.Result;
     }
+
+    async Task ZmazVeduceho(Veduci veduci)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Odstránením vedúceho odstránite aj jeho priradenie k aktivitám.");
+        var modal = Modal.Show<YesNoModal>($"Skutočne chcete odstrániť vedúceho {veduci.Prezyvka}?", parameters);
+        var result = await modal.Result;
+        if (!result.Cancelled)
+        {
+            Rozvrh.Veduci.Remove(veduci);
+        }
+    }
+
+    async Task SaveData()
+    {
+        await localStorage.SetItemAsync("plachta", JsonConvert.SerializeObject(Rozvrh));
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol ulozeny");
+        var modal = Modal.Show<YesNoModal>($"Information", parameters);
+        var result = await modal.Result;
+    }
+
+    async Task LoadData()
+    { 
+        Rozvrh = JsonConvert.DeserializeObject<Rozvrh>(await localStorage.GetItemAsync<string>("plachta"));
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
+            var modal = Modal.Show<YesNoModal>($"Information", parameters);
+        var result = await modal.Result;
+    }
+
 }

@@ -3,65 +3,90 @@
 @using Plachta.Client.Pages
 @using Plachta.Shared.BO
 
+@inject IModalService Modal
 
-
-<button class="btn btn-info" @onclick="ShowModal">Pridaj</button>
-<ul>
+<Button class="btn btn-primary btn-sm" @onclick="PridajSablonuAktivity">Pridaj aktivitu</Button>
+<br />
+<ul class="sablonyAktivit">
     @foreach (var sablona in Plachtovac.Rozvrh.SablonyAktivit)
     {
-        <li draggable="true" @ondragstart="e => HandleDragStart(e, sablona)">@sablona.Nazov</li>
+    <li draggable="true" @ondragstart="e => HandleDragStart(e, sablona)">
+        <span class="small">@sablona.Nazov</span>
+        <div class="sablonaContent">
+            <div class="sablonaPreview" style="width: 100%; height: 45px;">
+                @((MarkupString)sablona.Design)
+            </div>
+            <div class="sablonaButtons">
+                <Button class="btn btn-sm" @onclick="() => EditujSablonu(sablona)"><i class="text-primary fas fa-edit"></i></Button>
+                <Button class="btn btn-sm" @onclick="() => EditujDesign(sablona)"><i class="text-info fas fa-pencil-ruler"></i></Button>
+                <Button class="btn btn-sm" @onclick="() => EditujSablonu(sablona)"><i class="text-danger fas fa-trash"></i></Button>
+            </div>
+        </div>
+    </li>
     }
 </ul>
-
-<Modal @ref="modalRef">
-    <ModalBackdrop />
-    <ModalContent IsCentered="true">
-        <ModalHeader>
-            <ModalTitle>Employee edit</ModalTitle>
-            <CloseButton Clicked="@HideModal" />
-        </ModalHeader>
-        <ModalBody>
-            <Field>
-                <FieldLabel>Name</FieldLabel>
-                <TextEdit @bind-Text="@name" Placeholder="Name" />
-            </Field>
-        </ModalBody>
-        <ModalFooter>
-            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
-            <Button Color="Color.Primary" Clicked="@Save">Save Changes</Button>
-        </ModalFooter>
-    </ModalContent>
-</Modal>
 
 @code {
     [CascadingParameter] Plachtovac Plachtovac { get; set; }
 
-    // reference to the modal component
-    private Modal modalRef;
-
-    private string name;
-
-    private void ShowModal()
+    async Task PridajSablonuAktivity()
     {
-        modalRef.Show();
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(PridajSablonuAktivityForm.Rozvrh), Plachtovac.Rozvrh);
+        var modal = Modal.Show<PridajSablonuAktivityForm>("Nová aktivita", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+            Plachtovac.Rozvrh.SablonyAktivit.Add((AktivitaSablona)result.Data);
+        }
+
     }
 
-    private void HideModal()
+    async Task EditujSablonu(AktivitaSablona sablona)
     {
-        modalRef.Hide();
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(PridajSablonuAktivityForm.Rozvrh), Plachtovac.Rozvrh);
+        parameters.Add(nameof(PridajSablonuAktivityForm.Sablona), sablona);
+        var modal = Modal.Show<PridajSablonuAktivityForm>("Uprav aktivitu", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+
+        }
+
     }
 
-    private void Save()
+    async Task EditujDesign(AktivitaSablona sablona)
     {
-        modalRef.Hide();
-        Plachtovac.Rozvrh.SablonyAktivit.Add(new AktivitaSablona{ Nazov = name});
-        name = "";
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(AktivitaDesignerView.Sablona), sablona);
+        parameters.Add(nameof(AktivitaDesignerView.Rozvrh), Plachtovac.Rozvrh);
+        var modal = Modal.Show<AktivitaDesignerView>("Design aktivity", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+
+        }
+
     }
 
     public async Task HandleDragStart(MouseEventArgs args, AktivitaSablona sablona)
     {
-        var rnd = new Random();
-        Plachtovac.SelectedAktivita = new PlachtaAktivitaView();
-        Plachtovac.SelectedAktivita.Aktivita = new Aktivita() {Trvanie = new TimeSpan(rnd.Next(0,3), rnd.Next(30, 59), 0), Time = new TimeSpan(12, 0, 0), Sablona = sablona };
+        var aktivita = new Aktivita()
+        {
+            Sablona = sablona,
+            Trvanie = sablona.Trvanie
+        };
+        //TODO prerobiť cez nejaké VMko
+        Plachtovac.SelectedAktivita = new PlachtaAktivitaView
+        {
+            Plachtovac = Plachtovac,
+#pragma warning disable BL0005 // Component parameter should not be set outside of its component.
+            Aktivita = aktivita
+#pragma warning restore BL0005 // Component parameter should not be set outside of its component.
+        };
     }
 }

@@ -1,0 +1,49 @@
+﻿@using Blazorise
+@using Plachta.Shared.BO
+
+<Field>
+    <FieldLabel>Prezývka</FieldLabel>
+    <TextEdit @ref="TextEditPrezyvka" @bind-Text="@prezyvka" Placeholder="Prezývka" />
+</Field>
+
+<button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
+<button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+@code {
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public Veduci Veduci
+    {
+        get => _veduci;
+        set
+        {
+            _veduci = value;
+            prezyvka = _veduci?.Prezyvka;
+        }
+    }
+
+    private Veduci _veduci = new Veduci();
+
+    private TextEdit TextEditPrezyvka;
+
+    private string prezyvka;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        TextEditPrezyvka.Focus(true);
+    }
+
+    void SubmitForm()
+    {
+        Veduci.Prezyvka = prezyvka;
+        BlazoredModal.Close(ModalResult.Ok(Veduci));
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
+    }
+
+}

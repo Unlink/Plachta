@@ -10,6 +10,8 @@ namespace Plachta.Shared.BO
 
         public int Zaciatok { get; set; }
 
+        public string ZaciatokStr => DniVTyzdni.GetDen(Zaciatok);
+
         public List<AktivitaSablona> SablonyAktivit { get; } = new List<AktivitaSablona>();
 
         public LinkedList<Den> Dni { get; } = new LinkedList<Den>();
@@ -17,31 +19,19 @@ namespace Plachta.Shared.BO
         public TimeSpan ZaciatokDna { get; set; }
         public TimeSpan KoniecDna { get; set; }
 
+        public List<Veduci> Veduci { get; set; } = new List<Veduci>();
+
         public int PocetDni => Dni.Count;
+        public string Nazov { get; set; }
 
-        public void PridajDen()
-        {
-            var poradie = PocetDni == 0 ? Zaciatok : (Dni.Last().Poradie + 1) % 7;
-            Dni.AddLast(new Den(poradie));
-        }
-
-        public void OdoberDen()
-        {
-            if (PocetDni > 0)
-            {
-                if (Dni.Last().MaAktivity)
-                {
-                    throw new InvalidOperationException("Nemozem zmazat den, ktory ma aktivity");
-                }
-                Dni.RemoveLast();
-            }
-        }
 
         public void PresunAktivitu(Aktivita aktivita, Den den, TimeSpan timeSpan)
         {
-            OdstranAktivitu(aktivita);
-            den.PridajAktivitu(aktivita);
-            aktivita.Time = timeSpan;
+            if (!den.Koliduje(timeSpan, aktivita)) { 
+                OdstranAktivitu(aktivita);
+                aktivita.Time = timeSpan;
+                den.PridajAktivitu(aktivita);
+            }
         }
 
         public bool OdstranAktivitu(Aktivita aktivita)
@@ -53,6 +43,33 @@ namespace Plachta.Shared.BO
                     return true;
                 }
             }
+            return false;
+        }
+
+        public void NastavPocetDni(int dni)
+        {
+            var rozdiel = this.PocetDni - dni;
+            if (rozdiel > 0)
+            {
+                for (int i = 0; i < rozdiel; i++)
+                {
+                    Dni.RemoveLast(); //TODO remove also from DB?
+                }
+            }
+            else if (rozdiel < 0)
+            {
+                for (int i = 0; i < (-1* rozdiel); i++)
+                {
+                    var poradie = PocetDni == 0 ? 0 : (Dni.Last().Poradie + 1) % 7;
+                    Dni.AddLast(new Den(poradie));
+                }
+            }
+        }
+
+        public bool Koliduje(Aktivita aktivita, TimeSpan time, TimeSpan trvanie)
+        {
+            var den = Dni.FirstOrDefault(d => d.Aktivity.Contains(aktivita));
+            if (den == null || den.Koliduje(time, aktivita, trvanie)) return true;
             return false;
         }
     }

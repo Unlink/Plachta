@@ -8,30 +8,26 @@ namespace Plachta.Shared.BO
 {
     public class Aktivita : INotifyPropertyChanged
     {
-        private string _design;
+        private TimeSpan _time;
         public AktivitaSablona Sablona { get; set; }
 
         public string Nazov => Sablona.Nazov;
 
-        public TimeSpan Time { get; set; }
-        public TimeSpan Trvanie { get; set; }
-
-        public List<String> Veduci { get; } = new List<string>();
-
-        public List<AktivitaItem> AktivitaItems { get; } = new List<AktivitaItem>();
-
-        public string Design
+        public TimeSpan Time
         {
-            get => _design;
+            get => _time;
             set
             {
-                if (value == _design) return;
-                _design = value;
-                Console.WriteLine("Changed design val");
                 OnPropertyChanged();
+                _time = value;
             }
         }
 
+        public TimeSpan Trvanie { get; set; }
+
+        public List<AktivitaVeduci> Veduci { get; set; }
+
+        public bool ZobrazCas { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

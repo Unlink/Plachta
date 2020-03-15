@@ -3,8 +3,10 @@
 
 @inject IJSRuntime JSRuntime
 
-<canvas @ref="Canvas" class="aktivita-components" style="height: 200px; width: @((Aktivita?.Trvanie.TotalMinutes ?? 60) * 6)px"></canvas>
 
+<div style="height: @(Height)px; width: @(Width)px" class="canvas-container">
+    <canvas @ref="Canvas" class="aktivita-components" height="@(Height)" width="@(Width)"></canvas>
+</div>
 <hr />
 <div class="dropdown">
     <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -18,24 +20,49 @@
 </div>
 
 @code {
-
     ElementReference Canvas;
+
+    [Parameter]
+    public AktivitaSablona Sablona { get; set; }
+
+    [Parameter]
+    public Rozvrh Rozvrh { get; set; }
+
+    private static int ScaleFactor = 1000;
 
     private Dictionary<string, DotNetObjectReference<JSInteropBOWrapper<AktivitaItem>>> items = new Dictionary<string, DotNetObjectReference<JSInteropBOWrapper<AktivitaItem>>>();
 
-    [Parameter]
-    public Aktivita Aktivita { get; set; }
+    public int Width
+    {
+        get
+        {
+            var fullWidth = (ScaleFactor * 1.414) - 50;
+            return (int)((Sablona.Trvanie.TotalMinutes / (Rozvrh.KoniecDna.TotalMinutes - Rozvrh.ZaciatokDna.TotalMinutes)) * fullWidth);
+
+        }
+    }
+
+    public int Height
+    {
+        get
+        {
+            return ScaleFactor / Rozvrh.PocetDni;
+
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            foreach (var item in Aktivita.AktivitaItems)
-            {
-                items.Add(Guid.NewGuid().ToString(), DotNetObjectReference.Create(new JSInteropBOWrapper<AktivitaItem>(item)));
-            }
             await JSRuntime.InvokeVoidAsync("FabricJSBindings.create", Canvas);
-            //TODO create elements in canvas
+
+            foreach (var item in Sablona.AktivitaItems)
+            {
+                var id = Guid.NewGuid().ToString();
+                items.Add(id, DotNetObjectReference.Create(new JSInteropBOWrapper<AktivitaItem>(item)));
+                await JSRuntime.InvokeVoidAsync("FabricJSBindings.addText", Canvas, id, items[id], items[id].Value.M);
+            }
         }
     }
 
@@ -53,14 +80,15 @@
             FontFamily = "Comic Sans",
         };
 
-        items.Add("a", DotNetObjectReference.Create(new JSInteropBOWrapper<AktivitaItem>(textAktivita)));
-        await JSRuntime.InvokeVoidAsync("FabricJSBindings.addText", Canvas, "a", items["a"], textAktivita);
+        var id = Guid.NewGuid().ToString();
+        items.Add(id, DotNetObjectReference.Create(new JSInteropBOWrapper<AktivitaItem>(textAktivita)));
+        await JSRuntime.InvokeVoidAsync("FabricJSBindings.addText", Canvas, id, items[id], textAktivita);
 
     }
 
     public async Task Test2()
     {
-        await JSRuntime.InvokeVoidAsync("FabricJSBindings.changeProperty", Canvas, "a", new
+        await JSRuntime.InvokeVoidAsync("FabricJSBindings.changeProperty", Canvas, items.Keys.Last(), new
         {
             fill = "#FF0000",
             text = "Skuska"
@@ -71,7 +99,7 @@
     {
         var svg = await JSRuntime.InvokeAsync<string>("FabricJSBindings.export", Canvas);
         Console.WriteLine(svg.Replace("\n", "").Replace("\r", ""));
-        Aktivita.Design = svg;
+        Sablona.Design = svg;
     }
 
     public void Dispose()

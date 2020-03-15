@@ -17,7 +17,6 @@ namespace Plachta.Shared.BO
         public Den(int poradie)
         {
             Poradie = poradie;
-            Aktivity.Add(new Aktivita(){Trvanie = new TimeSpan(1, 0, 0), Time = new TimeSpan(12,10,0), Sablona = new AktivitaSablona(){Nazov = "Test"}});
         }
 
 
@@ -32,14 +31,18 @@ namespace Plachta.Shared.BO
 
         public bool Koliduje(Aktivita aktivita)
         {
-            return false;
+            return Koliduje(aktivita.Time, null, aktivita.Trvanie);
         }
 
-        public bool Koliduje(TimeSpan novyZaciatok, Aktivita aktivita)
+        public bool Koliduje(TimeSpan novyZaciatok, Aktivita aktivita, TimeSpan noveTrvanie = default)
         {
+            if (noveTrvanie == default)
+            {
+                noveTrvanie = aktivita.Trvanie;
+            }
             foreach (var a in Aktivity)
             {
-                if (a != aktivita && a.Time < novyZaciatok.Add(aktivita.Trvanie) && novyZaciatok < a.Time.Add(a.Trvanie))
+                if (a != aktivita && a.Time < novyZaciatok.Add(noveTrvanie) && novyZaciatok < a.Time.Add(a.Trvanie))
                 {
                     return true;
                 }

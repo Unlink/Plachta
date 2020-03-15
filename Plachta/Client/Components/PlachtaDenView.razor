@@ -1,16 +1,17 @@
-﻿@using System.Globalization
+﻿@using System.ComponentModel
 @using Plachta.Shared.BO;
-@using Plachta.Client.Components;
 @using Plachta.Client.Helpers
 @using Plachta.Client.Pages;
 @using BlazorContextMenu
+
+@implements IDisposable
 
 @inject IJSRuntime JSRuntime
 
 <div class="den">
     <div class="title">
-        @Den.Poradie <br />
-        Test
+        @(DniVTyzdni.GetDen((Den.Poradie + Plachtovac.Rozvrh.Zaciatok) % 7)) <br />
+        Veduci
     </div>
     <div class="aktivity dropzone"
          @ondragenter="HandleDragEnter"
@@ -20,7 +21,7 @@
          @ref=AktivityDiv>
         @foreach (var aktivita in Den.Aktivity)
         {
-            <ContextMenuTrigger MenuId="myMenu" Data="aktivita">
+            <ContextMenuTrigger MenuId="aktivitaContextMenu" Data="aktivita">
                 <PlachtaAktivitaView Aktivita="@aktivita"></PlachtaAktivitaView>
             </ContextMenuTrigger>
         }
@@ -40,12 +41,22 @@
     private BoundingClientRect denBounding;
     private bool _dropAllowed = false;
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override void OnInitialized()
     {
-        base.OnAfterRender(firstRender);
-        Den.PropertyChanged += (o, e) => StateHasChanged();
+        base.OnInitialized();
+        Den.PropertyChanged += DenOnPropertyChanged; ;
     }
 
+    public void Dispose()
+    {
+        Den.PropertyChanged -= DenOnPropertyChanged;
+        Console.WriteLine("Den disposed");
+    }
+
+    private void DenOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
 
     private async Task HandleDragEnter()
     {
@@ -55,7 +66,7 @@
     private async Task HandleDrop(DragEventArgs dragEventArgs)
     {
         var left = ((dragEventArgs.ClientX - denBounding.x - Plachtovac.SelectedAktivita.SelectionOffset) / denBounding.width);
-        Plachtovac.Rozvrh.PresunAktivitu(Plachtovac.SelectedAktivita.Aktivita, Den, new TimeSpan((int)(8 + ((left * 12 * 60) / 60)), (int)((left * 12 * 60) % 60), 0));
+        Plachtovac.Rozvrh.PresunAktivitu(Plachtovac.SelectedAktivita.Aktivita, Den, LeftToTimeSpan(left));
     }
 
     private void DragOver(DragEventArgs dragEventArgs)
@@ -64,12 +75,19 @@
 
 
         var left = ((dragEventArgs.ClientX - denBounding.x - Plachtovac.SelectedAktivita.SelectionOffset) / denBounding.width);
+        var size = Plachtovac.SelectedAktivita.Trvanie / 100;
 
-        if (Den.Koliduje(new TimeSpan((int)(8 + ((left * 12 * 60) / 60)), (int)((left * 12 * 60) % 60), 0), Plachtovac.SelectedAktivita.Aktivita))
+        if (left < 0 || left + size > 1 || Den.Koliduje(LeftToTimeSpan(left), Plachtovac.SelectedAktivita.Aktivita))
         {
             _dropAllowed = false;
             return;
         }
         _dropAllowed = true;
+    }
+
+    private TimeSpan LeftToTimeSpan(double position)
+    {
+        var dayDuration = Plachtovac.Rozvrh.KoniecDna - Plachtovac.Rozvrh.ZaciatokDna;
+        return new TimeSpan((int)(Plachtovac.Rozvrh.ZaciatokDna.Hours + ((position * dayDuration.TotalMinutes) / 60)), (int)(Plachtovac.Rozvrh.ZaciatokDna.Minutes + (position * dayDuration.TotalMinutes) % 60), 0);
     }
 }

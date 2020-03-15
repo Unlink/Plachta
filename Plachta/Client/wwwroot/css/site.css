@@ -181,3 +181,152 @@ app {
         display: block;
     }
 }
+
+
+
+
+#plachtaUi {
+    position: relative;
+}
+
+#plachta-view {
+    background-color: ghostwhite;
+    border: 1px solid black;
+    width: calc(100% - 200px);
+    position: relative;
+    display: inline-block;
+}
+
+#plachta-view > div {
+    width: 100%;
+    padding-bottom: 71%;
+    background: gold;
+    position: relative;
+}
+
+#plachta-view > div > div {
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#plachtaToolBar {
+    width: 190px;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#plachtaToolBar .card-body,
+#plachtaToolBar .card-header {
+    padding: 5px 10px;
+}
+
+#plachtaToolBar .card-header {
+    cursor: pointer;
+}
+
+ul.sablonyAktivit {
+    list-style: none;
+    padding: 0;
+}
+
+
+.sablonaContent {
+    position: relative;
+}
+
+.sablonaButtons {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+}
+
+.sablonaPreview {
+    border: 1px solid #d7d7d7;
+}
+
+.den {
+    margin: 1px;
+    position: relative;
+    flex: 1;
+}
+
+.den .title {
+    background: red;
+    width: 50px;
+    height: 100%;
+    position: absolute;
+    writing-mode: vertical-rl;
+    transform: rotate(-180deg);
+    text-align: center;
+}
+
+.aktivity {
+    width: calc(100% - 52px);
+    position: absolute;
+    background-color: aquamarine;
+    height: 100%;
+    left: 51px;
+}
+
+.aktivita {
+    height: 100%;
+    position: absolute;
+    background-color: darkorchid;
+}
+
+.dropdown-placeholder {
+    height: 100%;
+    position: absolute;
+    border: 2px dotted black;
+    display: none;
+}
+
+.canvas-container {
+    border: 1px solid #d7d7d7;
+}
+
+.sablonaContent svg,
+.aktivita svg {
+    height: 100%;
+    width: 100%;
+}
+
+.aktivitaTime {
+    position: absolute;
+    display: block;
+    border: 1px solid black;
+    padding: 2px;
+    font-size: 8pt;
+    font-weight: bold;
+    background: white;
+    top: -2px;
+    left: -2px;
+}
+
+
+.accordion .card-header:after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f107";
+    float: right;
+    font-weight: 600;
+}
+
+.accordion .card-header.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\f105";
+}
+
+/*.aktivita-components {
+        position: relative;
+    }
+
+    .aktivita-component {
+        position: absolute;
+        border: 1px solid black;
+    }*/

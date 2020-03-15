@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
+using Blazored.LocalStorage;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Blazor.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Blazored.Modal;
 
 namespace Plachta.Client
 {
@@ -18,12 +20,11 @@ namespace Plachta.Client
             builder.RootComponents.Add<App>("app");
             builder.Services
                 .AddBlazorContextMenu()
-                .AddBlazorise(options =>
-                {
-                    options.ChangeTextOnKeyPress = true;
-                })
+                .AddBlazorise(options => { options.ChangeTextOnKeyPress = true; })
                 .AddBootstrapProviders()
-                .AddFontAwesomeIcons();
+                .AddFontAwesomeIcons()
+                .AddBlazoredModal()
+                .AddBlazoredLocalStorage();
 
             var host = builder.Build();
 

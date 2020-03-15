@@ -7,12 +7,15 @@
 
   <ItemGroup>
     <PackageReference Include="Blazor.ContextMenu" Version="1.6.0" />
+    <PackageReference Include="Blazored.LocalStorage" Version="2.1.1" />
+    <PackageReference Include="Blazored.Modal" Version="4.0.0" />
     <PackageReference Include="Blazorise.Bootstrap" Version="0.8.8.3" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.8.8.3" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.2.0-preview1.20073.1" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="3.2.0-preview1.20073.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="3.2.0-preview1.20073.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="3.2.0-preview1.20073.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Plachta.Shared.csproj" />

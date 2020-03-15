@@ -1,0 +1,36 @@
+﻿@using Blazorise
+
+    <p>
+        @Message
+    </p>
+
+    <div class="float-right">
+        <Button @ref="SubmitButton" @onclick="SubmitForm" class="btn btn-primary">Ok</Button>
+        <Button @onclick="Cancel" class="btn btn-secondary">Cancel</Button>
+    </div>
+@code {
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public string Message { get; set; }
+
+    private Button SubmitButton;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        SubmitButton.Focus();
+    }
+
+    void SubmitForm()
+    {
+        BlazoredModal.Close(ModalResult.Ok(true));
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
+    }
+
+}
