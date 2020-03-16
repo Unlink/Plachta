@@ -90,12 +90,11 @@
         else if (Rozvrh.Koliduje(Aktivita, Converters.FromTimeStr(time), new TimeSpan(trvanieAktivity / 60, trvanieAktivity % 60, 0)))
         {
             e.Status = ValidationStatus.Error;
-            e.ErrorText = "Aktivita koliduje s inou aktivitou";
+            e.ErrorText = "Aktivita koliduje s inou aktivitou alebo je mimo rozsahu dňa";
         }
         else
         {
             e.Status = ValidationStatus.Success;
-            validations.ClearAll();
         }
     }
 

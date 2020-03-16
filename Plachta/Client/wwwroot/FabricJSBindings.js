@@ -1,4 +1,5 @@
 ﻿var FabricJSBindings = FabricJSBindings || {};
+
 FabricJSBindings.create = (function (element) {
     FabricJSBindings.CanvasElRefs = FabricJSBindings.CanvasElRefs || {};
     FabricJSBindings.CanvasElRefs[element] = {

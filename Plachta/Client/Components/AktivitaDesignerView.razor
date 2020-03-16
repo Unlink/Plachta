@@ -1,5 +1,7 @@
 ﻿@using System.Globalization
+@using Newtonsoft.Json
 @using Plachta.Shared.BO
+@using JsonSerializer = System.Text.Json.JsonSerializer
 
 @inject IJSRuntime JSRuntime
 
@@ -19,8 +21,13 @@
     </div>
 </div>
 
+<button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
+<button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+
 @code {
     ElementReference Canvas;
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
 
     [Parameter]
     public AktivitaSablona Sablona { get; set; }
@@ -59,8 +66,10 @@
 
             foreach (var item in Sablona.AktivitaItems)
             {
+                //Coppy object
+                var itemClone = JsonSerializer.Deserialize(JsonConvert.SerializeObject(item), item.GetType());
                 var id = Guid.NewGuid().ToString();
-                items.Add(id, DotNetObjectReference.Create(new JSInteropBOWrapper<AktivitaItem>(item)));
+                items.Add(id, DotNetObjectReference.Create(new JSInteropBOWrapper<AktivitaItem>((AktivitaItem) itemClone)));
                 await JSRuntime.InvokeVoidAsync("FabricJSBindings.addText", Canvas, id, items[id], items[id].Value.M);
             }
         }
@@ -77,6 +86,8 @@
             Text = "asdf",
             Top = 10,
             Width = 100,
+            ScaleX = 1,
+            ScaleY = 1,
             FontFamily = "Comic Sans",
         };
 
@@ -100,6 +111,26 @@
         var svg = await JSRuntime.InvokeAsync<string>("FabricJSBindings.export", Canvas);
         Console.WriteLine(svg.Replace("\n", "").Replace("\r", ""));
         Sablona.Design = svg;
+    }
+
+    async Task SubmitForm()
+    {
+        var svg = await JSRuntime.InvokeAsync<string>("FabricJSBindings.export", Canvas);
+        Console.WriteLine(svg.Replace("\n", "").Replace("\r", ""));
+        Sablona.Design = svg;
+
+        Sablona.AktivitaItems.Clear();
+        foreach (var item in items.Values)
+        {
+            Sablona.AktivitaItems.Add(item.Value.M);
+        }
+
+        BlazoredModal.Close(ModalResult.Ok(Sablona));
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
     }
 
     public void Dispose()

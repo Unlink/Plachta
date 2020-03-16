@@ -68,6 +68,7 @@ namespace Plachta.Shared.BO
 
         public bool Koliduje(Aktivita aktivita, TimeSpan time, TimeSpan trvanie)
         {
+            if (time < ZaciatokDna || time + trvanie > KoniecDna) return true;
             var den = Dni.FirstOrDefault(d => d.Aktivity.Contains(aktivita));
             if (den == null || den.Koliduje(time, aktivita, trvanie)) return true;
             return false;

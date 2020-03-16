@@ -153,7 +153,12 @@
 
     async Task SaveData()
     {
-        await localStorage.SetItemAsync("plachta", JsonConvert.SerializeObject(Rozvrh));
+        var settings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Objects
+        };
+
+        await localStorage.SetItemAsync("plachta", JsonConvert.SerializeObject(Rozvrh, settings));
 
         var parameters = new ModalParameters();
         parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol ulozeny");
@@ -162,12 +167,16 @@
     }
 
     async Task LoadData()
-    { 
-        Rozvrh = JsonConvert.DeserializeObject<Rozvrh>(await localStorage.GetItemAsync<string>("plachta"));
+    {
+        var settings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Objects
+        };
+        Rozvrh = JsonConvert.DeserializeObject<Rozvrh>(await localStorage.GetItemAsync<string>("plachta"), settings);
 
         var parameters = new ModalParameters();
         parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
-            var modal = Modal.Show<YesNoModal>($"Information", parameters);
+        var modal = Modal.Show<YesNoModal>($"Information", parameters);
         var result = await modal.Result;
     }
 
