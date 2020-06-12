@@ -35,6 +35,13 @@ a, .btn-link {
     min-height: 40px;
 }
 
+.dropdown-info {
+    color: #34495e;
+    font-size: small;
+    padding: 0 10px;
+    width: 200px;
+}
+
 app {
     position: relative;
     display: flex;
@@ -74,12 +81,12 @@ app {
 }
 
 
-#plachtaUi {
+.plachtaUi {
     width: 100%;
     position: relative;
 }
 
-#plachta-view {
+.plachta-view {
     background-color: ghostwhite;
     border: 1px solid black;
     width: calc(100% - 200px);
@@ -87,14 +94,18 @@ app {
     display: inline-block;
 }
 
-    #plachta-view > div {
+    .plachta-view.readonly {
+        width: 100%;
+    }
+
+    .plachta-view > div {
         width: 100%;
         padding-bottom: 71%;
         background: gold;
         position: relative;
     }
 
-        #plachta-view > div > div {
+        .plachta-view > div > div {
             top: 0;
             bottom: 0;
             position: absolute;
@@ -103,7 +114,7 @@ app {
             flex-direction: column;
         }
 
-#plachtaToolBar {
+.plachtaToolBar {
     width: 190px;
     display: inline-block;
     position: absolute;
@@ -111,12 +122,12 @@ app {
     right: 0;
 }
 
-    #plachtaToolBar .card-body,
-    #plachtaToolBar .card-header {
+    .plachtaToolBar .card-body,
+    .plachtaToolBar .card-header {
         padding: 5px 10px;
     }
 
-    #plachtaToolBar .card-header {
+    .plachtaToolBar .card-header {
         cursor: pointer;
     }
 
