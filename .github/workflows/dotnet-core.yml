@@ -1,0 +1,36 @@
+name: .NET Core 
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.102
+    - name: Build
+      working-directory: ./Plachta.Client
+      run: dotnet build --configuration Release
+    - name: Publish
+      working-directory: ./Plachta.Client
+      run: dotnet publish -c Release --no-build -o ../publish/
+    - name: Fix publish
+      working-directory: ./publish
+      run: |
+        mv wwwroot/* .
+        rmdir wwwroot
+        sed -i -e "s/base href=\".*\"/base href=\"\/Plachta\/\"/" index.html
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./publish
+
