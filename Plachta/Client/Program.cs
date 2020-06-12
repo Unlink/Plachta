@@ -10,6 +10,8 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.Extensions.DependencyInjection;
 using Blazored.Modal;
+using Blazorise.Icons.Material;
+using Blazorise.Material;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Plachta.Client
@@ -23,7 +25,8 @@ namespace Plachta.Client
             builder.Services
                 .AddBlazorContextMenu()
                 .AddBlazorise(options => { options.ChangeTextOnKeyPress = true; })
-                .AddBootstrapProviders()
+                .AddMaterialProviders()
+                .AddMaterialIcons()
                 .AddFontAwesomeIcons()
                 .AddBlazoredModal()
                 .AddBlazoredLocalStorage()
@@ -34,7 +37,8 @@ namespace Plachta.Client
             var host = builder.Build();
 
             host.Services
-                .UseBootstrapProviders()
+                .UseMaterialProviders()
+                .UseMaterialIcons()
                 .UseFontAwesomeIcons();
 
             await host.RunAsync();

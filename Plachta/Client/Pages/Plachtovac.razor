@@ -1,4 +1,4 @@
-﻿@page "/plachtovac"
+﻿@page "/"
 @using BlazorContextMenu
 @using Plachta.Shared.BO;
 @using Plachta.Client.Components;
@@ -7,6 +7,7 @@
 
 @inject IModalService Modal
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+
 <h3>Plachta</h3>
 
 <Button @onclick="SaveData">Save</Button>
