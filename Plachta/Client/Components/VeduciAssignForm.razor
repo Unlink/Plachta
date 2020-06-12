@@ -30,7 +30,7 @@
         foreach (var veduci in Rozvrh.Veduci)
         {
             var aktivitaVM = new AktivitaVeduciVM(veduci);
-            var aktivitaVeduci = PriradenyVeduci.FirstOrDefault(v => v.Veduci == veduci);
+            var aktivitaVeduci = PriradenyVeduci?.FirstOrDefault(v => v.Veduci == veduci);
             if (aktivitaVeduci != null)
             {
                 aktivitaVM.Selected = true;

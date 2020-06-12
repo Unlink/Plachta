@@ -1,5 +1,4 @@
 ﻿@page "/plachtovac"
-@using System.Text.Json
 @using BlazorContextMenu
 @using Plachta.Shared.BO;
 @using Plachta.Client.Components;
@@ -29,17 +28,20 @@
 
         <div id="plachtaToolBar">
             <div class="accordion">
-                <div class="card">
-                    <div class="card-header" id="headingAktivity" data-toggle="collapse" data-target="#aktivity_sablony">
-                        Aktivity
-                    </div>
+                @if (Rozvrh.PocetDni > 0)
+                {
+                    <div class="card">
+                        <div class="card-header" id="headingAktivity" data-toggle="collapse" data-target="#aktivity_sablony">
+                            Aktivity
+                        </div>
 
-                    <div id="aktivity_sablony" class="collapse" data-parent=".accordion">
-                        <div class="card-body">
-                            <SablonyAktivityView></SablonyAktivityView>
+                        <div id="aktivity_sablony" class="collapse" data-parent=".accordion">
+                            <div class="card-body">
+                                <SablonyAktivityView></SablonyAktivityView>
+                            </div>
                         </div>
                     </div>
-                </div>
+                }
                 <div class="card">
                     <div class="card-header" id="headingVeduci" data-toggle="collapse" data-target="#veduci_list">
                         Vedúci
@@ -93,7 +95,7 @@
 @code {
     public PlachtaAktivitaView SelectedAktivita { get; set; }
 
-    public Rozvrh Rozvrh { get; private set; } = new Rozvrh() {ZaciatokDna = new TimeSpan(8,0,0), KoniecDna = new TimeSpan(22,0,0)};
+    public Rozvrh Rozvrh { get; private set; } = new Rozvrh() { ZaciatokDna = new TimeSpan(8, 0, 0), KoniecDna = new TimeSpan(22, 0, 0) };
 
     void DeleteActivity(ItemClickEventArgs e)
     {
@@ -127,7 +129,7 @@
 
         if (!result.Cancelled)
         {
-            Rozvrh.Veduci.Add((Veduci) result.Data);
+            Rozvrh.Veduci.Add((Veduci)result.Data);
         }
     }
 
@@ -155,7 +157,8 @@
     {
         var settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Objects
+            TypeNameHandling = TypeNameHandling.Objects,
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects
         };
 
         await localStorage.SetItemAsync("plachta", JsonConvert.SerializeObject(Rozvrh, settings));
@@ -170,7 +173,8 @@
     {
         var settings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Objects
+            TypeNameHandling = TypeNameHandling.Objects,
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects
         };
         Rozvrh = JsonConvert.DeserializeObject<Rozvrh>(await localStorage.GetItemAsync<string>("plachta"), settings);
 

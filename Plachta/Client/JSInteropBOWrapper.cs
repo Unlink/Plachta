@@ -9,12 +9,19 @@ namespace Plachta.Client
 {
     public class JSInteropBOWrapper<T>
     {
+        public string Id { get; }
         public T M { get; set; }
 
         private Dictionary<string, JsonElement> _elementData = new Dictionary<string, JsonElement>();
 
-        public JSInteropBOWrapper(T m)
+        public event EventHandler ItemSelectionChanged;
+        public event EventHandler ItemRemoved;
+
+        public bool IsSelected { get; set; }
+
+        public JSInteropBOWrapper(string id, T m)
         {
+            Id = id;
             M = m;
         }
 
@@ -33,9 +40,18 @@ namespace Plachta.Client
         }
 
         [JSInvokable]
-        public void Selected()
+        public void Selected(bool state)
         {
-            Console.WriteLine("Object selected");
+            Console.WriteLine("Object selected " + state);
+            IsSelected = state;
+            ItemSelectionChanged?.Invoke(this,EventArgs.Empty);
+        }
+
+        [JSInvokable]
+        public void Remove()
+        {
+            Console.WriteLine("Object removed");
+            ItemRemoved?.Invoke(this, EventArgs.Empty);
         }
 
         private void ApplyChanges()

@@ -280,6 +280,14 @@ ul.sablonyAktivit {
         text-align: center;
     }
 
+        .den .title .veduciDna button {
+            visibility: collapse;
+        }
+
+        .den .title .veduciDna:hover button {
+            visibility: visible;
+        }
+
 .aktivity {
     width: calc(100% - 52px);
     position: absolute;

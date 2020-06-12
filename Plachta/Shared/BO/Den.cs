@@ -10,9 +10,21 @@ namespace Plachta.Shared.BO
 {
     public class Den : INotifyPropertyChanged
     {
+        private Veduci _veduci;
         public int Poradie { get; internal set; }
         public bool MaAktivity => Aktivity.Any();
         public List<Aktivita> Aktivity { get; } = new List<Aktivita>();
+
+        public Veduci Veduci
+        {
+            get => _veduci;
+            set
+            {
+                if (Equals(value, _veduci)) return;
+                _veduci = value;
+                OnPropertyChanged();
+            }
+        }
 
         public Den(int poradie)
         {

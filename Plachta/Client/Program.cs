@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
+using Blazor.FileReader;
 using Blazored.LocalStorage;
 using Blazorise;
 using Blazorise.Bootstrap;
@@ -24,7 +25,8 @@ namespace Plachta.Client
                 .AddBootstrapProviders()
                 .AddFontAwesomeIcons()
                 .AddBlazoredModal()
-                .AddBlazoredLocalStorage();
+                .AddBlazoredLocalStorage()
+                .AddFileReaderService(options => options.UseWasmSharedBuffer = true);
 
             var host = builder.Build();
 

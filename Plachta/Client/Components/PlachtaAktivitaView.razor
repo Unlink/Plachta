@@ -10,8 +10,9 @@
 
 <div @ref="AktivitaHtmlElement" class="aktivita" draggable="true"
       @ondragstart="e => HandleDragStart(e)"
+      @ondragend="e => HandleDragEnd(e)"
       style="left: @Pozicia.ToString("N", CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N", CultureInfo.InvariantCulture)%">
-    @((MarkupString) Aktivita.Sablona.Design)
+    @((MarkupString) Aktivita.Design)
     @if (Aktivita.ZobrazCas)
     {
         <span class="aktivitaTime">@Aktivita.Time.ToString(@"hh\:mm")</span>
@@ -41,6 +42,11 @@
         SelectionOffset = args.ClientX - aktivitaBoundingBox.x;
     }
 
+    public async Task HandleDragEnd(MouseEventArgs args)
+    {
+        Plachtovac.SelectedAktivita = null;
+    }
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -49,6 +55,7 @@
 
     private void AktivitaOnPropertyChanged(object sender, PropertyChangedEventArgs e)
     {
+        Console.WriteLine("Prekreslujem aktivitu");
         StateHasChanged();
     }
 
