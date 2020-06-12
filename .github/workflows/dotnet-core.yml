@@ -17,11 +17,11 @@ jobs:
       with:
         dotnet-version: 3.1.102
     - name: Build
-      working-directory: ./Plachta.Client
+      working-directory: ./Plachta/Client
       run: dotnet build --configuration Release
     - name: Publish
-      working-directory: ./Plachta.Client
-      run: dotnet publish -c Release --no-build -o ../publish/
+      working-directory: ./Plachta/Client
+      run: dotnet publish -c Release --no-build -o ../../publish/
     - name: Fix publish
       working-directory: ./publish
       run: |
