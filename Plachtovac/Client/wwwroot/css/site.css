@@ -1,0 +1,241 @@
+﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+@media all and (display-mode: standalone) {
+    .navbar-brand {
+        display: none;
+    }
+
+    .content {
+        padding: 0 !important;
+    }
+}
+
+.navbar-brand img {
+    margin-right: 5px;
+}
+
+.navbar {
+    color: #ffffff;
+    background: #2980b9;
+    padding: 5px;
+    min-height: 40px;
+}
+
+.dropdown-info {
+    color: #34495e;
+    font-size: small;
+    padding: 0 10px;
+    width: 200px;
+}
+
+app {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    margin: 60px 0;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.loader-box {
+    width: 500px;
+    height: 120px;
+    margin: 100px auto;
+    text-align: center;
+    font-family: Consolas, Verdana;
+    font-size: .75em;
+}
+
+
+.plachtaUi {
+    width: 100%;
+    position: relative;
+}
+
+.plachta-view {
+    background-color: ghostwhite;
+    border: 1px solid black;
+    width: calc(100% - 200px);
+    position: relative;
+    display: inline-block;
+}
+
+    .plachta-view.readonly {
+        width: 100%;
+    }
+
+    .plachta-view > div {
+        width: 100%;
+        padding-bottom: 71%;
+        background: gold;
+        position: relative;
+    }
+
+        .plachta-view > div > div {
+            top: 0;
+            bottom: 0;
+            position: absolute;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+.plachtaToolBar {
+    width: 190px;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+    .plachtaToolBar .card-body,
+    .plachtaToolBar .card-header {
+        padding: 5px 10px;
+    }
+
+    .plachtaToolBar .card-header {
+        cursor: pointer;
+    }
+
+ul.sablonyAktivit {
+    list-style: none;
+    padding: 0;
+}
+
+
+.sablonaContent {
+    position: relative;
+}
+
+.sablonaButtons {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+}
+
+.sablonaPreview {
+    border: 1px solid #d7d7d7;
+}
+
+.den {
+    margin: 1px;
+    position: relative;
+    flex: 1;
+}
+
+    .den .title {
+        background: red;
+        width: 50px;
+        height: 100%;
+        position: absolute;
+        writing-mode: vertical-rl;
+        transform: rotate(-180deg);
+        text-align: center;
+    }
+
+        .den .title .veduciDna button {
+            visibility: collapse;
+        }
+
+        .den .title .veduciDna:hover button {
+            visibility: visible;
+        }
+
+.aktivity {
+    width: calc(100% - 52px);
+    position: absolute;
+    background-color: aquamarine;
+    height: 100%;
+    left: 51px;
+}
+
+.aktivita {
+    height: 100%;
+    position: absolute;
+    background-color: darkorchid;
+}
+
+.dropdown-placeholder {
+    height: 100%;
+    position: absolute;
+    border: 2px dotted black;
+    display: none;
+}
+
+.canvas-container {
+    border: 1px solid #d7d7d7;
+}
+
+.sablonaContent svg,
+.aktivita svg {
+    height: 100%;
+    width: 100%;
+}
+
+.aktivitaTime {
+    position: absolute;
+    display: block;
+    border: 1px solid black;
+    padding: 2px;
+    font-size: 8pt;
+    font-weight: bold;
+    background: white;
+    top: -2px;
+    left: -2px;
+}
+
+
+.accordion .card-header:after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f107";
+    float: right;
+    font-weight: 600;
+}
+
+.accordion .card-header.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\f105";
+}
+
+/*.aktivita-components {
+        position: relative;
+    }
+
+    .aktivita-component {
+        position: absolute;
+        border: 1px solid black;
+    }*/

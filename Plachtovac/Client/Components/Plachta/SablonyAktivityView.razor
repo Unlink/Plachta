@@ -1,0 +1,91 @@
+﻿@using Blazorise
+@using Plachtovac.Client.Components.Forms
+@using Plachtovac.Shared.BO
+
+@inject IModalService Modal
+
+<Button class="btn btn-primary btn-sm" @onclick="PridajSablonuAktivity">Pridaj aktivitu</Button>
+<br />
+<ul class="sablonyAktivit">
+    @foreach (var sablona in PlachtaView.Rozvrh.SablonyAktivit)
+    {
+    <li draggable="true" @ondragstart="e => HandleDragStart(e, sablona)">
+        <span class="small">@sablona.Nazov</span>
+        <div class="sablonaContent">
+            <div class="sablonaPreview" style="width: 100%; height: 45px;">
+                @((MarkupString)sablona.Design)
+            </div>
+            <div class="sablonaButtons">
+                <Button class="btn btn-sm" @onclick="() => EditujSablonu(sablona)"><i class="text-primary fas fa-edit"></i></Button>
+                <Button class="btn btn-sm" @onclick="() => EditujDesign(sablona)"><i class="text-info fas fa-pencil-ruler"></i></Button>
+                <Button class="btn btn-sm" @onclick="() => EditujSablonu(sablona)"><i class="text-danger fas fa-trash"></i></Button>
+            </div>
+        </div>
+    </li>
+    }
+</ul>
+
+@code {
+    [CascadingParameter] PlachtaView PlachtaView { get; set; }
+
+    async Task PridajSablonuAktivity()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(PridajSablonuAktivityForm.Rozvrh), PlachtaView.Rozvrh);
+        var modal = Modal.Show<PridajSablonuAktivityForm>("Nová aktivita", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+            PlachtaView.Rozvrh.SablonyAktivit.Add((AktivitaSablona)result.Data);
+        }
+
+    }
+
+    async Task EditujSablonu(AktivitaSablona sablona)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(PridajSablonuAktivityForm.Rozvrh), PlachtaView.Rozvrh);
+        parameters.Add(nameof(PridajSablonuAktivityForm.Sablona), sablona);
+        var modal = Modal.Show<PridajSablonuAktivityForm>("Uprav aktivitu", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+
+        }
+
+    }
+
+    async Task EditujDesign(AktivitaSablona sablona)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(AktivitaDesignerView.Sablona), sablona);
+        parameters.Add(nameof(AktivitaDesignerView.Rozvrh), PlachtaView.Rozvrh);
+        var modal = Modal.Show<AktivitaDesignerView>("Design aktivity", parameters);
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+
+        }
+
+    }
+
+    public async Task HandleDragStart(MouseEventArgs args, AktivitaSablona sablona)
+    {
+        var aktivita = new Aktivita()
+        {
+            Sablona = sablona,
+            Trvanie = sablona.Trvanie
+        };
+        //TODO prerobiť cez nejaké VMko
+        PlachtaView.SelectedAktivita = new PlachtaAktivitaView
+        {
+            PlachtaView = PlachtaView,
+#pragma warning disable BL0005 // Component parameter should not be set outside of its component.
+            Aktivita = aktivita
+#pragma warning restore BL0005 // Component parameter should not be set outside of its component.
+        };
+    }
+}

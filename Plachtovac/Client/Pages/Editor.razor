@@ -1,0 +1,19 @@
+﻿@page "/editor"
+@using Plachtovac.Client.Services
+@using Plachtovac.Shared.BO
+@using Plachtovac.Client.Components.Plachta
+
+
+@inject PlachtaService PlachtaService
+
+<PlachtaView Editable="true" Rozvrh="Rozvrh"></PlachtaView>
+
+@code {
+    public Rozvrh Rozvrh { get; private set; }
+
+    protected override void OnInitialized()
+    {
+        Rozvrh = PlachtaService.AktualnyRozvrh;
+    }
+
+}

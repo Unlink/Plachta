@@ -1,0 +1,329 @@
+﻿@using System.ComponentModel
+@using Blazor.FileReader
+@using Newtonsoft.Json
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@using Blazorise
+@using System.IO;
+@using System.Text
+@using Plachtovac.Client.Helpers
+@using Plachtovac.Client.Services
+@using Plachtovac.Shared.BO
+
+
+@implements IDisposable
+
+@inject IJSRuntime JSRuntime
+@inject IFileReaderService fileReaderService;
+
+@if (_imageConversionInProgress)
+{
+    <div class="loader-box">
+        <i class="fa-4x fas fa-cog fa-spin"></i>
+        <br />
+        <p id="loadingText" class="mt-3">Konvertujem obrázok</p>
+    </div>
+}
+<div style="@cotentStyle">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div style="height: @(Height)px; width: @(Width)px" class="canvas-container">
+                    <canvas @ref="Canvas" class="aktivita-components" height="@(Height)" width="@(Width)"></canvas>
+                </div>
+            </div>
+            <div class="col" style="width: 250px; height: @(Height)px; overflow-y: auto">
+                @if (selectedAktivitaItem != null)
+                {
+                    @if (!(selectedAktivitaItem is ZoznamVeducichTextAktivitaItem))
+                    {
+                        <Field>
+                            <FieldLabel>Text</FieldLabel>
+                            <TextEdit @bind-Text="@selectedAktivitaItem.Text" Placeholder="Text" />
+                        </Field>
+                    }
+                    else
+                    {
+                        <Field>
+                            <FieldLabel>Počet riadkov</FieldLabel>
+                            <NumericEdit TValue="int" ValueChanged="PocetRiadkovChanged" Value="((ZoznamVeducichTextAktivitaItem) selectedAktivitaItem).PocetRiadkov" Step="1" Decimals="0" />
+                        </Field>
+                    }
+                    <Field>
+                        <FieldLabel>Font</FieldLabel>
+                        <Select @bind-SelectedValue="@selectedAktivitaItem.FontFamily" TValue="string">
+                            @foreach (var font in _fonts)
+                            {
+                                <SelectItem Value="@font">@font</SelectItem>
+                            }
+                        </Select>
+                    </Field>
+                    <Field>
+                        <FieldLabel>Text</FieldLabel>
+                        <input type="color" @bind="selectedAktivitaItem.Fill" />
+                    </Field>
+                }
+                else
+                {
+                    <div>
+                        Čo dať sem?
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <hr />
+    <div>
+        <div class="btn-group">
+            <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-plus"></i>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" @onclick="InsertText">Text</a>
+                @if (Sablona.Veduci.Count > 0)
+                {
+                    <a class="dropdown-item" @onclick="InsertZoznamVeducich">Zoznam vedúcich</a>
+                }
+                <a class="dropdown-item" style="position: relative">
+                    Obrázok
+                    <input @ref=inputTypeFileElement @onchange="InsertFile" type="file" accept="image/*" style="opacity: 0.0; position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%;" />
+                </a>
+            </div>
+        </div>
+        <button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
+        <button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+    </div>
+</div>
+
+@code {
+    ElementReference Canvas;
+    ElementReference inputTypeFileElement;
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public AktivitaSablona Sablona { get; set; }
+
+    [Parameter]
+    public Rozvrh Rozvrh { get; set; }
+
+    private bool _imageConversionInProgress = false;
+    private string cotentStyle => _imageConversionInProgress ? "visibility:collapse" : "";
+
+    private string[] _fonts = new[] { "Arial", "Comic Sans" };
+
+    private TextAktivitaItem selectedAktivitaItem;
+
+    private static int ScaleFactor = 1500;
+
+    private Dictionary<string, DotNetObjectReference<JSInteropBOWrapper<AktivitaItem>>> items = new Dictionary<string, DotNetObjectReference<JSInteropBOWrapper<AktivitaItem>>>();
+
+    public int Width
+    {
+        get
+        {
+            var fullWidth = (ScaleFactor * 1.414) - 50;
+            return (int)((Sablona.Trvanie.TotalMinutes / (Rozvrh.KoniecDna.TotalMinutes - Rozvrh.ZaciatokDna.TotalMinutes)) * fullWidth);
+
+        }
+    }
+
+    public int Height => ScaleFactor / Rozvrh.PocetDni;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("FabricJSBindings.create", Canvas);
+
+            foreach (var item in Sablona.AktivitaItems)
+            {
+                //Coppy object
+                var itemClone = JsonSerializer.Deserialize(JsonConvert.SerializeObject(item), item.GetType());
+                await InsertItem((AktivitaItem)itemClone);
+            }
+        }
+    }
+
+    private void JsWrapperOnItemSelectionChanged(object sender, EventArgs e)
+    {
+        var jsWrapper = sender as JSInteropBOWrapper<AktivitaItem>;
+        if (jsWrapper?.M is TextAktivitaItem item)
+        {
+            if (jsWrapper.IsSelected)
+            {
+                selectedAktivitaItem = item;
+                selectedAktivitaItem.PropertyChanged += SelectedAktivitaItemOnPropertyChanged;
+            }
+            else
+            {
+                if (selectedAktivitaItem != null)
+                {
+                    selectedAktivitaItem.PropertyChanged -= SelectedAktivitaItemOnPropertyChanged;
+                }
+                selectedAktivitaItem = null;
+            }
+        }
+        else
+        {
+            selectedAktivitaItem = null;
+        }
+        StateHasChanged();
+    }
+
+    private void JsWrapperOnItemRemoved(object sender, EventArgs e)
+    {
+        var jsWrapper = sender as JSInteropBOWrapper<AktivitaItem>;
+        items.Remove(jsWrapper.Id);
+        selectedAktivitaItem = null;
+        StateHasChanged();
+    }
+
+    private void SelectedAktivitaItemOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var id = items.Where(x => x.Value.Value.M == selectedAktivitaItem).Select(x => x.Key).FirstOrDefault();
+        if (id != null)
+        {
+            JSRuntime.InvokeVoidAsync("FabricJSBindings.changeProperty", Canvas, id, selectedAktivitaItem);
+        }
+    }
+
+    private async Task PocetRiadkovChanged(int newValue)
+    {
+        if (selectedAktivitaItem is ZoznamVeducichTextAktivitaItem zv)
+        {
+            if (newValue > 0)
+            {
+                zv.PocetRiadkov = newValue;
+                zv.NastavZoznamVeducich(Sablona.Veduci);
+                SelectedAktivitaItemOnPropertyChanged(this, new PropertyChangedEventArgs(nameof(ZoznamVeducichTextAktivitaItem.Text)));
+            }
+        }
+    }
+
+    public async Task InsertText()
+    {
+        var textAktivita = new TextAktivitaItem
+        {
+            Fill = "#000000",
+            Height = 15,
+            Left = 10,
+            Text = Sablona.Nazov,
+            Top = 10,
+            Width = 40,
+            ScaleX = 1,
+            ScaleY = 1,
+            FontFamily = "Comic Sans",
+        };
+
+        await InsertItem(textAktivita);
+
+    }
+
+    public async Task InsertZoznamVeducich()
+    {
+        var textAktivita = new ZoznamVeducichTextAktivitaItem()
+        {
+            Fill = "#000000",
+            Height = 15,
+            Left = 10,
+            PocetRiadkov = 2,
+            Top = 10,
+            Width = 40,
+            ScaleX = 1,
+            ScaleY = 1,
+            FontFamily = "Comic Sans",
+        };
+
+        textAktivita.NastavZoznamVeducich(Sablona.Veduci);
+
+        await InsertItem(textAktivita);
+
+    }
+
+    public async Task InsertFile()
+    {
+        var fileInputReference = fileReaderService.CreateReference(inputTypeFileElement);
+        foreach (var file in await fileInputReference.EnumerateFilesAsync())
+        {
+            _imageConversionInProgress = true;
+            StateHasChanged();
+            var fileInfo = await file.ReadFileInfoAsync();
+            var memoryStream = await file.CreateMemoryStreamAsync();
+            var bytes = memoryStream.ToArray();
+
+            var base64 = Convert.ToBase64String(bytes);
+            var type = fileInfo.Type;
+            //temp = $"data:{type};base64,{base64}";
+
+            Console.WriteLine("Conversion started");
+            var imgData = await JSRuntime.InvokeAsync<ImgConversionResult>("FabricJSBindings.resizeImage", $"data:{type};base64,{base64}", Width - 10, Height - 10);
+            Console.WriteLine("Conversion done");
+            Console.WriteLine(imgData.Data);
+
+            var imageItem = new ObrazokAktivitaItem
+            {
+                Height = imgData.Height,
+                Left = 10,
+                Top = 10,
+                Width = imgData.Width,
+                ScaleX = 1,
+                ScaleY = 1,
+                Image = imgData.Data
+            };
+
+            _imageConversionInProgress = false;
+            await InsertItem(imageItem);
+            await fileInputReference.ClearValue();
+        }
+    }
+
+    private async Task<JSInteropBOWrapper<AktivitaItem>> InsertItem(AktivitaItem item)
+    {
+        var id = Guid.NewGuid().ToString();
+        item.Id = id;
+        var jsWrapper = new JSInteropBOWrapper<AktivitaItem>(id, item);
+        jsWrapper.ItemSelectionChanged += JsWrapperOnItemSelectionChanged;
+        jsWrapper.ItemRemoved += JsWrapperOnItemRemoved;
+        items.Add(id, DotNetObjectReference.Create(jsWrapper));
+        if (item is TextAktivitaItem)
+        {
+            await JSRuntime.InvokeVoidAsync("FabricJSBindings.addText", Canvas, id, items[id], items[id].Value.M);
+        }
+        else if (item is ObrazokAktivitaItem)
+        {
+            await JSRuntime.InvokeVoidAsync("FabricJSBindings.addImage", Canvas, id, items[id], items[id].Value.M);
+        }
+        return jsWrapper;
+    }
+
+    async Task SubmitForm()
+    {
+        var svg = await JSRuntime.InvokeAsync<string>("FabricJSBindings.export", Canvas);
+        Console.WriteLine(svg.Replace("\n", "").Replace("\r", ""));
+        Sablona.Design = svg;
+
+        Sablona.AktivitaItems.Clear();
+        foreach (var item in items.Values)
+        {
+            Sablona.AktivitaItems.Add(item.Value.M);
+        }
+
+        BlazoredModal.Close(ModalResult.Ok(Sablona));
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
+    }
+
+
+    public void Dispose()
+    {
+        foreach (var item in items.Values)
+        {
+            item.Dispose();
+        }
+        JSRuntime.InvokeVoidAsync("FabricJSBindings.dispose", Canvas);
+    }
+}

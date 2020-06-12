@@ -1,0 +1,84 @@
+﻿@using Newtonsoft.Json
+@using Blazorise
+@using Plachtovac.Client.Components.Forms
+@using Plachtovac.Client.Services
+@using Plachtovac.Shared.BO
+
+@inject PlachtaService PlachtaService
+@inject IModalService Modal
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarFileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        File
+    </a>
+    <div class="dropdown-menu" aria-labelledby="navbarFileDropdown">
+        <a class="dropdown-item" href="editor">New</a>
+        <a class="dropdown-item" href="view">Open</a>
+        @if (PlachtaService.AktualnyRozvrh != null)
+        {
+            <a class="dropdown-item" href="#">Save</a>
+        }
+    </div>
+</li>
+@if (PlachtaService.AktualnyRozvrh != null)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarRozvrhDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Rozvrh: @PlachtaService.AktualnyRozvrh.Nazov
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarRozvrhDropdown">
+            <div class="dropdown-info">
+                Počet dní: @PlachtaService.AktualnyRozvrh.Dni.Count<br />
+                Začiatočný deň: @PlachtaService.AktualnyRozvrh.ZaciatokStr<br />
+                Začiatok dňa: @PlachtaService.AktualnyRozvrh.ZaciatokDna<br />
+                Koniec dňa: @PlachtaService.AktualnyRozvrh.KoniecDna<br />
+            </div>
+            <button class="dropdown-item" @onclick="SetupRozvrh">Nastavenia</button>
+        </div>
+    </li>
+}
+
+
+@code {
+    async Task SaveData()
+    {
+        var settings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Objects,
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects
+        };
+
+        await LocalStorage.SetItemAsync("plachta", JsonConvert.SerializeObject(PlachtaService.AktualnyRozvrh, settings));
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol ulozeny");
+        var modal = Modal.Show<YesNoModal>($"Information", parameters);
+        var result = await modal.Result;
+    }
+
+    async Task LoadData()
+    {
+        var settings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Objects,
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects
+        };
+        PlachtaService.AktualnyRozvrh = JsonConvert.DeserializeObject<Rozvrh>(await LocalStorage.GetItemAsync<string>("plachta"), settings);
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
+        var modal = Modal.Show<YesNoModal>($"Information", parameters);
+        var result = await modal.Result;
+    }
+
+    private async Task SetupRozvrh()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(RozvrhNastaveniaForm.Rozvrh), PlachtaService.AktualnyRozvrh);
+        var modal = Modal.Show<RozvrhNastaveniaForm>("Nastavenia rozvrhu", parameters);
+        await modal.Result;
+        Console.WriteLine("Modal closed");
+    }
+
+}

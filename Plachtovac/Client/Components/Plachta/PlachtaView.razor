@@ -1,0 +1,56 @@
+﻿@using Blazorise
+@using BlazorContextMenu
+@using Plachtovac.Client.Components.Forms
+@using Plachtovac.Shared.BO
+
+@inject IModalService Modal
+
+<div class="plachtaUi">
+    <CascadingValue Value="this">
+        <div class="plachta-view @(!Editable ? "readonly" : "")">
+            <div>
+                <div>
+                    @foreach (var den in Rozvrh.Dni)
+                    {
+                        <PlachtaDenView Den="den"></PlachtaDenView>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (Editable)
+        {
+            <PlachtaToolbox />
+            <ContextMenu Id="aktivitaContextMenu">
+                <Item OnClick="@DeleteActivity"><i class="fas fa-trash-alt red-icon"></i> Delete</Item>
+                <Item OnClick="@EditActivity"><i class="fas fa-edit"></i> Edit</Item>
+            </ContextMenu>
+        }
+    </CascadingValue>
+</div>
+
+@code {
+    [Parameter]
+    public bool Editable { get; set; }
+
+    [Parameter]
+    public Rozvrh Rozvrh { get; set; }
+
+    public PlachtaAktivitaView SelectedAktivita { get; set; }
+
+    public void DeleteActivity(ItemClickEventArgs e)
+    {
+        var aktivita = e.Data as Aktivita;
+        Rozvrh.OdstranAktivitu(aktivita);
+    }
+
+    public void EditActivity(ItemClickEventArgs e)
+    {
+        var aktivita = e.Data as Aktivita;
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(AktivitaPropertiesForm.Aktivita), aktivita);
+        parameters.Add(nameof(AktivitaPropertiesForm.Rozvrh), Rozvrh);
+        Modal.Show<AktivitaPropertiesForm>($"Aktivita {aktivita.Nazov}", parameters);
+    }
+}

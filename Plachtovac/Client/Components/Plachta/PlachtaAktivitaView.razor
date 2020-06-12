@@ -1,0 +1,66 @@
+﻿@using System.ComponentModel
+@using System.Globalization
+@using Plachtovac.Client.Helpers
+@using Plachtovac.Shared.BO
+
+@implements IDisposable
+
+@inject IJSRuntime JSRuntime
+
+<div @ref="AktivitaHtmlElement" class="aktivita" draggable="true"
+      @ondragstart="e => HandleDragStart(e)"
+      @ondragend="e => HandleDragEnd(e)"
+      style="left: @Pozicia.ToString("N", CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N", CultureInfo.InvariantCulture)%">
+    @((MarkupString) Aktivita.Design)
+    @if (Aktivita.ZobrazCas)
+    {
+        <span class="aktivitaTime">@Aktivita.Time.ToString(@"hh\:mm")</span>
+    }
+</div>
+
+
+@code {
+    ElementReference AktivitaHtmlElement;
+
+    [CascadingParameter]
+    public PlachtaView PlachtaView { get; set; }
+
+    [Parameter]
+    public Aktivita Aktivita { get; set; }
+
+    public double Pozicia => ((Aktivita.Time.TotalMinutes - PlachtaView.Rozvrh.ZaciatokDna.TotalMinutes) / (PlachtaView.Rozvrh.KoniecDna.TotalMinutes - PlachtaView.Rozvrh.ZaciatokDna.TotalMinutes)) * 100;
+
+    public double Trvanie => (Aktivita.Trvanie.TotalMinutes / (PlachtaView.Rozvrh.KoniecDna.TotalMinutes - PlachtaView.Rozvrh.ZaciatokDna.TotalMinutes)) * 100;
+
+    public double SelectionOffset { get; private set; }
+
+    public async Task HandleDragStart(MouseEventArgs args)
+    {
+        PlachtaView.SelectedAktivita = this;
+        var aktivitaBoundingBox = await JSRuntime.InvokeAsync<BoundingClientRect>("Plachtovac.getBoundingClientRect", AktivitaHtmlElement);
+        SelectionOffset = args.ClientX - aktivitaBoundingBox.x;
+    }
+
+    public async Task HandleDragEnd(MouseEventArgs args)
+    {
+        PlachtaView.SelectedAktivita = null;
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Aktivita.PropertyChanged += AktivitaOnPropertyChanged;
+    }
+
+    private void AktivitaOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        Console.WriteLine("Prekreslujem aktivitu");
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Aktivita.PropertyChanged -= AktivitaOnPropertyChanged;
+    }
+
+}

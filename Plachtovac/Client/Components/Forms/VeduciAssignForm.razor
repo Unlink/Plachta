@@ -1,0 +1,57 @@
+﻿@using Blazorise
+@using Plachtovac.Client.VM
+@using Plachtovac.Shared.BO
+
+<h5>Vedúci</h5>
+<div class="border" style="width: 350px; max-height: 300px; overflow-y: auto;padding: 5px;">
+    @foreach (var veduci in ZoznamVeducich)
+    {
+        <Check TValue="bool" @bind-Checked="@veduci.Selected">@veduci.Veduci.Prezyvka</Check>
+        @if (veduci.Selected)
+        {
+            <MemoEdit Rows="3" @bind-Text="@veduci.Poznamka"></MemoEdit>
+        }
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public Rozvrh Rozvrh { get; set; }
+
+    [Parameter]
+    public List<AktivitaVeduci> PriradenyVeduci { get; set; }
+
+    private List<AktivitaVeduciVM> ZoznamVeducich;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ZoznamVeducich = new List<AktivitaVeduciVM>();
+        foreach (var veduci in Rozvrh.Veduci)
+        {
+            var aktivitaVM = new AktivitaVeduciVM(veduci);
+            var aktivitaVeduci = PriradenyVeduci?.FirstOrDefault(v => v.Veduci == veduci);
+            if (aktivitaVeduci != null)
+            {
+                aktivitaVM.Selected = true;
+                aktivitaVM.Poznamka = aktivitaVeduci.Popis;
+            }
+            ZoznamVeducich.Add(aktivitaVM);
+        }
+
+    }
+
+    public List<AktivitaVeduci> GetResult()
+    {
+        var veduci = new List<AktivitaVeduci>();
+        foreach (var veduciVm in ZoznamVeducich)
+        {
+            if (veduciVm.Selected)
+            {
+                veduci.Add(new AktivitaVeduci {Veduci = veduciVm.Veduci, Popis = veduciVm.Poznamka});
+            }
+        }
+        return veduci;
+    }
+}

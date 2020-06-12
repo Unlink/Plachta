@@ -1,0 +1,111 @@
+﻿@using Blazorise
+@using Plachtovac.Client.Components.Forms
+@using Plachtovac.Shared.BO
+
+@inject IModalService Modal
+
+
+s<div class="plachtaToolBar">
+    <div class="accordion">
+        @if (Rozvrh.PocetDni > 0)
+        {
+            <div class="card">
+                <div class="card-header" id="headingAktivity" data-toggle="collapse" data-target="#aktivity_sablony">
+                    Aktivity
+                </div>
+
+                <div id="aktivity_sablony" class="collapse" data-parent=".accordion">
+                    <div class="card-body">
+                        <SablonyAktivityView></SablonyAktivityView>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="card">
+            <div class="card-header" id="headingVeduci" data-toggle="collapse" data-target="#veduci_list">
+                Vedúci
+            </div>
+            <div id="veduci_list" class="collapse" aria-labelledby="headingVeduci" data-parent=".accordion">
+                <div class="card-body">
+                    <Button class="btn btn-primary btn-sm" @onclick="PridajVeduceho">Pridaj vedúceho</Button><br />
+                    @foreach (var veduci in Rozvrh.Veduci)
+                    {
+                        <Addons>
+                            <Addon AddonType="AddonType.Body">
+                                <TextEdit IsPlaintext="true" IsReadonly="true" @bind-Text="@veduci.Prezyvka"></TextEdit>
+                            </Addon>
+                            <Addon AddonType="AddonType.End">
+                                <Buttons>
+                                    <Button class="btn btn-sm" @onclick="() => EditujVeduceho(veduci)"><i class="text-primary fas fa-user-edit"></i></Button>
+                                    <Button class="btn btn-sm" @onclick="() => ZmazVeduceho(veduci)"><i class="text-danger fas fa-user-minus"></i></Button>
+                                </Buttons>
+                            </Addon>
+                        </Addons>
+
+                    }
+                </div>
+            </div>
+        </div>
+        @*<div class="card">
+            <div class="card-header" id="headingRozvrh" data-toggle="collapse" data-target="#rozvrh_info">
+                Rozvrh
+            </div>
+            <div id="rozvrh_info" class="collapse" aria-labelledby="headingRozvrh" data-parent=".accordion">
+                <div class="card-body small">
+                    Počet dní: @Rozvrh.Dni.Count<br />
+                    Začiatočný deň: @Rozvrh.ZaciatokStr<br />
+                    Začiatok dňa: @Rozvrh.ZaciatokDna<br />
+                    Koniec dňa: @Rozvrh.KoniecDna<br />
+                    <button @onclick="NastaveniaRozvrhu" class="btn btn-primary btn-sm">Uprav nastavenia</button>
+                </div>
+            </div>
+        </div>*@
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public PlachtaView PlachtaView { get; set; }
+
+    public Rozvrh Rozvrh => PlachtaView.Rozvrh;
+
+    async Task NastaveniaRozvrhu()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(RozvrhNastaveniaForm.Rozvrh), Rozvrh);
+        var modal = Modal.Show<RozvrhNastaveniaForm>("Nastavenia rozvrhu", parameters);
+        await modal.Result;
+        Console.WriteLine("Modal closed");
+    }
+
+    async Task PridajVeduceho()
+    {
+        var modal = Modal.Show<PridajVeducehoForm>("Pridaj vedúceho");
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+            Rozvrh.Veduci.Add((Veduci)result.Data);
+        }
+    }
+
+    async Task EditujVeduceho(Veduci veduci)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(PridajVeducehoForm.Veduci), veduci);
+        var modal = Modal.Show<PridajVeducehoForm>("Uprav vedúceho", parameters);
+        var result = await modal.Result;
+    }
+
+    async Task ZmazVeduceho(Veduci veduci)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Odstránením vedúceho odstránite aj jeho priradenie k aktivitám.");
+        var modal = Modal.Show<YesNoModal>($"Skutočne chcete odstrániť vedúceho {veduci.Prezyvka}?", parameters);
+        var result = await modal.Result;
+        if (!result.Cancelled)
+        {
+            Rozvrh.Veduci.Remove(veduci);
+        }
+    }
+}

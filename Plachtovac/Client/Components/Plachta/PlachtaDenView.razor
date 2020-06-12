@@ -1,0 +1,112 @@
+﻿@using System.ComponentModel
+@using BlazorContextMenu
+@using Plachtovac.Shared.BO
+@using Blazorise
+@using Plachtovac.Client.Components.Forms
+@using Plachtovac.Client.Helpers
+
+@implements IDisposable
+
+@inject IJSRuntime JSRuntime
+@inject IModalService Modal
+
+<div class="den">
+    <div class="title">
+        <span class="devVTyzdni">@(DniVTyzdni.GetDen((Den.Poradie + PlachtaView.Rozvrh.Zaciatok) % 7))</span> <br />
+        <span class="veduciDna"><span>@Den.Veduci?.Prezyvka</span> <Button @onclick="NastavVeducehoDna" class="btn btn-small btn-primary" style="padding: 0;"><i class="fas fa-edit"></i></Button></span>
+    </div>
+    <div class="aktivity dropzone"
+         @ondragenter="HandleDragEnter"
+         @ondragover="e => DragOver(e)"
+         @ondragover:preventDefault="_dropAllowed"
+         @ondrop="e => HandleDrop(e)"
+         @ref=AktivityDiv>
+        @foreach (var aktivita in Den.Aktivity)
+        {
+            <ContextMenuTrigger MenuId="aktivitaContextMenu" Data="aktivita">
+                <PlachtaAktivitaView Aktivita="@aktivita"></PlachtaAktivitaView>
+            </ContextMenuTrigger>
+        }
+    </div>
+</div>
+
+
+
+@code{
+    ElementReference AktivityDiv;
+
+    [CascadingParameter]
+    public PlachtaView PlachtaView { get; set; }
+
+    [Parameter]
+    public Den Den { get; set; }
+
+    private BoundingClientRect denBounding;
+    private bool _dropAllowed = false;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Den.PropertyChanged += DenOnPropertyChanged; ;
+    }
+
+    async Task NastavVeducehoDna()
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(NastavVeducehoDnaForm.Rozvrh), PlachtaView.Rozvrh);
+        parameters.Add(nameof(NastavVeducehoDnaForm.Den), Den);
+        var modal = Modal.Show<NastavVeducehoDnaForm>($"Úprava dňa", parameters);
+        var result = await modal.Result;
+    }
+
+    public void Dispose()
+    {
+        Den.PropertyChanged -= DenOnPropertyChanged;
+        Console.WriteLine("Den disposed");
+    }
+
+    private void DenOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        Console.WriteLine("Prekreslujem den");
+        StateHasChanged();
+    }
+
+    private async Task HandleDragEnter()
+    {
+        denBounding = await JSRuntime.InvokeAsync<BoundingClientRect>("Plachtovac.getBoundingClientRect", AktivityDiv);
+    }
+
+    private async Task HandleDrop(DragEventArgs dragEventArgs)
+    {
+        if (PlachtaView.SelectedAktivita == null) return;
+        var left = ((dragEventArgs.ClientX - denBounding.x - PlachtaView.SelectedAktivita.SelectionOffset) / denBounding.width);
+        PlachtaView.Rozvrh.PresunAktivitu(PlachtaView.SelectedAktivita.Aktivita, Den, LeftToTimeSpan(left));
+    }
+
+    private void DragOver(DragEventArgs dragEventArgs)
+    {
+        dragEventArgs.DataTransfer.DropEffect = "move";
+        if (PlachtaView.SelectedAktivita == null)
+        {
+            _dropAllowed = false;
+            return;
+        }
+
+
+        var left = ((dragEventArgs.ClientX - denBounding.x - PlachtaView.SelectedAktivita.SelectionOffset) / denBounding.width);
+        var size = PlachtaView.SelectedAktivita.Trvanie / 100;
+
+        if (left < 0 || left + size > 1 || Den.Koliduje(LeftToTimeSpan(left), PlachtaView.SelectedAktivita.Aktivita))
+        {
+            _dropAllowed = false;
+            return;
+        }
+        _dropAllowed = true;
+    }
+
+    private TimeSpan LeftToTimeSpan(double position)
+    {
+        var dayDuration = PlachtaView.Rozvrh.KoniecDna - PlachtaView.Rozvrh.ZaciatokDna;
+        return new TimeSpan((int)(PlachtaView.Rozvrh.ZaciatokDna.Hours + ((position * dayDuration.TotalMinutes) / 60)), (int)(PlachtaView.Rozvrh.ZaciatokDna.Minutes + (position * dayDuration.TotalMinutes) % 60), 0);
+    }
+}
