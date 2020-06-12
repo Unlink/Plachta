@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Plachtovač</title>
+    <base href="/Plachta/" />
+
+    <link href="libs/material/css/material.min.css" rel="stylesheet">
+
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i|Roboto+Mono:300,400,700|Roboto+Slab:300,400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+
+    <link href="_content/Blazorise/blazorise.css" rel="stylesheet" />
+    <link href="_content/Blazorise.Material/blazorise.material.css" rel="stylesheet" />
+    <link href="_content/Blazor.ContextMenu/blazorContextMenu.min.css" rel="stylesheet" />
+    <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+
+    <link href="manifest.json" rel="manifest" />
+</head>
+
+<body>
+    <app>
+
+        <div class="loader-box">
+            <i class="fa-4x fas fa-cog fa-spin"></i>
+            <br />
+            <p id="loadingText" class="mt-3">Loading...</p>
+        </div>
+
+        <!-- Added to force fa load -->
+        <i style="visibility:hidden" class="fas fa-exclamation"></i>
+
+    </app>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+    <!-- inside of body section and after the <app> tag  -->
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="libs/material/js/material.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.2/fabric.min.js"></script>
+
+
+    <script src="_content/Blazorise/blazorise.js"></script>
+    <script src="_content/Blazorise.Material/blazorise.material.js"></script>
+    <script src="_content/Blazor.ContextMenu/blazorContextMenu.min.js"></script>
+
+    <script src="helpers.js"></script>
+    <script src="FabricJSBindings.js"></script>
+
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+</body>
+
+</html>
