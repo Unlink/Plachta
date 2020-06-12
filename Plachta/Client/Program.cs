@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text;
 using Blazor.FileReader;
@@ -7,9 +8,9 @@ using Blazored.LocalStorage;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
-using Microsoft.AspNetCore.Blazor.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Blazored.Modal;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Plachta.Client
 {
@@ -27,6 +28,8 @@ namespace Plachta.Client
                 .AddBlazoredModal()
                 .AddBlazoredLocalStorage()
                 .AddFileReaderService(options => options.UseWasmSharedBuffer = true);
+
+            builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             var host = builder.Build();
 

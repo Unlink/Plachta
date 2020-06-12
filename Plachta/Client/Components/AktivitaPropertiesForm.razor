@@ -25,10 +25,10 @@
         </Validation>
     </Field>
     <Field>
-        <CheckEdit @bind-Checked="@hasTimeBadge">Zobraziť čas</CheckEdit>
+        <Check TValue="bool" @bind-Checked="@hasTimeBadge">Zobraziť čas</Check>
     </Field>
     <Field>
-        <CheckEdit @bind-Checked="@hasVeduciPreAktivitu">Veduci pre aktivitu</CheckEdit>
+        <Check TValue="bool" @bind-Checked="@hasVeduciPreAktivitu">Veduci pre aktivitu</Check>
     </Field>
 </Validations>
 @if (hasVeduciPreAktivitu)

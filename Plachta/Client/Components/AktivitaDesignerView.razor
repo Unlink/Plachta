@@ -50,12 +50,12 @@
                     }
                     <Field>
                         <FieldLabel>Font</FieldLabel>
-                        <SelectEdit @bind-SelectedValue="@selectedAktivitaItem.FontFamily" TValue="string">
+                        <Select @bind-SelectedValue="@selectedAktivitaItem.FontFamily" TValue="string">
                             @foreach (var font in _fonts)
                             {
                                 <SelectItem Value="@font">@font</SelectItem>
                             }
-                        </SelectEdit>
+                        </Select>
                     </Field>
                     <Field>
                         <FieldLabel>Text</FieldLabel>

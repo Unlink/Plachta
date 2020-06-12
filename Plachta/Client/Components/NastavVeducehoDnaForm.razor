@@ -3,14 +3,14 @@
 
 <Field>
     <FieldLabel>Vedúci dňa</FieldLabel>
-    <SelectEdit @bind-SelectedValue="_veduci">
+    <Select @bind-SelectedValue="_veduci">
         <SelectItem Value="-1">-</SelectItem>
         @for (var i=0;i<Rozvrh.Veduci.Count;i++)
         {
             var meno = Rozvrh.Veduci[i].Prezyvka;
             <SelectItem Value="@i">@meno</SelectItem>
         }
-    </SelectEdit>
+    </Select>
 
 </Field>
 
