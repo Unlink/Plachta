@@ -14,6 +14,13 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
+.btn-clear {
+    background: transparent;
+    border: 0px none;
+    min-width: 0;
+    box-shadow: none;
+}
+
 @media all and (display-mode: standalone) {
     .navbar-brand {
         display: none;
@@ -35,6 +42,16 @@ a, .btn-link {
     min-height: 40px;
 }
 
+.navbar .input-group {
+    background: transparent;
+}
+
+button.dropdown-item {
+    cursor: pointer;
+    color: rgba(0,0,0,.87);
+    text-decoration: none;
+}
+
 .dropdown-info {
     color: #34495e;
     font-size: small;
@@ -42,11 +59,15 @@ a, .btn-link {
     width: 200px;
 }
 
-app {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+.dropdown-info .form-control {
+    padding: 1px 5px 1px 1px;  
 }
+
+    app {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
 
 .content {
     margin: 60px 0;
@@ -91,7 +112,7 @@ app {
     border: 1px solid black;
     width: calc(100% - 200px);
     position: relative;
-    display: inline-block;
+    display: block;
 }
 
     .plachta-view.readonly {
@@ -100,7 +121,7 @@ app {
 
     .plachta-view > div {
         width: 100%;
-        padding-bottom: 71%;
+        padding-bottom: 70.5%;
         background: gold;
         position: relative;
     }
@@ -162,17 +183,36 @@ ul.sablonyAktivit {
         width: 50px;
         height: 100%;
         position: absolute;
-        writing-mode: vertical-rl;
-        transform: rotate(-180deg);
         text-align: center;
     }
 
+        .den .title .devVTyzdni {
+            transform: rotate(-90deg) translateY(-12px);
+            text-align: center;
+            display: block;
+            position: absolute;
+            top: 45%;
+            left: 0;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .den .title .veduciDna {
+            transform: rotate(-90deg) translateY(12px);
+            text-align: center;
+            display: block;
+            position: absolute;
+            top: 45%;
+            left: 0;
+            width: 100%;
+        }
+
         .den .title .veduciDna button {
-            visibility: collapse;
+            display: none;
         }
 
         .den .title .veduciDna:hover button {
-            visibility: visible;
+            display: inline-block;
         }
 
 .aktivity {

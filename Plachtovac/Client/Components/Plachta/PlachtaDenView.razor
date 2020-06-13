@@ -12,8 +12,8 @@
 
 <div class="den">
     <div class="title">
-        <span class="devVTyzdni">@(DniVTyzdni.GetDen((Den.Poradie + PlachtaView.Rozvrh.Zaciatok) % 7))</span> <br />
-        <span class="veduciDna"><span>@Den.Veduci?.Prezyvka</span> <Button @onclick="NastavVeducehoDna" class="btn btn-small btn-primary" style="padding: 0;"><i class="fas fa-edit"></i></Button></span>
+        <span class="devVTyzdni">@(DniVTyzdni.GetDen((Den.Poradie + PlachtaView.Rozvrh.Zaciatok) % 7))</span>
+        <span class="veduciDna"><span>@(Den.Veduci?.Prezyvka ?? "N/A")</span> <Button @onclick="NastavVeducehoDna" class="btn-small btn-clear" style="padding: 0;"><i class="fas fa-edit"></i></Button></span>
     </div>
     <div class="aktivity dropzone"
          @ondragenter="HandleDragEnter"

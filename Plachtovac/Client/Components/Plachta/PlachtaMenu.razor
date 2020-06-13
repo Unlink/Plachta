@@ -14,10 +14,11 @@
     </a>
     <div class="dropdown-menu" aria-labelledby="navbarFileDropdown">
         <a class="dropdown-item" href="editor">New</a>
-        <a class="dropdown-item" href="view">Open</a>
+        <a class="dropdown-item" href="view">Print</a>
+        <button class="dropdown-item" @onclick="LoadData">Load</button>
         @if (PlachtaService.AktualnyRozvrh != null)
         {
-            <a class="dropdown-item" href="#">Save</a>
+            <button class="dropdown-item" @onclick="SaveData">Save</button>
         }
     </div>
 </li>
@@ -34,7 +35,36 @@
                 Začiatok dňa: @PlachtaService.AktualnyRozvrh.ZaciatokDna<br />
                 Koniec dňa: @PlachtaService.AktualnyRozvrh.KoniecDna<br />
             </div>
+            <div class="dropdown-divider"></div>
             <button class="dropdown-item" @onclick="SetupRozvrh">Nastavenia</button>
+        </div>
+    </li>
+
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarRozvrhDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Vedúci
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarVeduciDropdown">
+            <button class="dropdown-item" @onclick="PridajVeduceho">Pridaj</button>
+            <div class="dropdown-divider"></div>
+            @foreach (var veduci in PlachtaService.AktualnyRozvrh.Veduci)
+            {
+                <Addons class="dropdown-info">
+                    <Addon AddonType="AddonType.Body">
+                        <span class="form-control">@veduci.Prezyvka</span>
+                    </Addon>
+                    <Addon AddonType="AddonType.End">
+                        <Buttons>
+                            <Tooltip Text="Uprav vedúceho">
+                                <Button class="btn btn-sm btn-clear" @onclick="() => EditujVeduceho(veduci)"><i class="text-primary fas fa-user-edit"></i></Button>
+                            </Tooltip>
+                            <Tooltip Text="Odstráň vedúceho">
+                                <Button class="btn btn-sm btn-clear" @onclick="() => ZmazVeduceho(veduci)"><i class="text-danger fas fa-user-minus"></i></Button>
+                            </Tooltip>
+                        </Buttons>
+                    </Addon>
+                </Addons>
+            }
         </div>
     </li>
 }
@@ -70,6 +100,7 @@
         parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
         var modal = Modal.Show<YesNoModal>($"Information", parameters);
         var result = await modal.Result;
+        StateHasChanged();
     }
 
     private async Task SetupRozvrh()
@@ -79,6 +110,41 @@
         var modal = Modal.Show<RozvrhNastaveniaForm>("Nastavenia rozvrhu", parameters);
         await modal.Result;
         Console.WriteLine("Modal closed");
+        StateHasChanged();
+    }
+
+    async Task PridajVeduceho()
+    {
+        var modal = Modal.Show<PridajVeducehoForm>("Pridaj vedúceho");
+        var result = await modal.Result;
+
+        if (!result.Cancelled)
+        {
+            PlachtaService.AktualnyRozvrh.Veduci.Add((Veduci)result.Data);
+            StateHasChanged();
+        }
+    }
+
+    async Task EditujVeduceho(Veduci veduci)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(PridajVeducehoForm.Veduci), veduci);
+        var modal = Modal.Show<PridajVeducehoForm>("Uprav vedúceho", parameters);
+        var result = await modal.Result;
+        StateHasChanged();
+    }
+
+    async Task ZmazVeduceho(Veduci veduci)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Odstránením vedúceho odstránite aj jeho priradenie k aktivitám.");
+        var modal = Modal.Show<YesNoModal>($"Skutočne chcete odstrániť vedúceho {veduci.Prezyvka}?", parameters);
+        var result = await modal.Result;
+        if (!result.Cancelled)
+        {
+            PlachtaService.AktualnyRozvrh.Veduci.Remove(veduci);
+            StateHasChanged();
+        }
     }
 
 }
