@@ -1,0 +1,26 @@
+﻿@page {
+    size: A4 landscape;
+}
+
+.content {
+    margin: 0;
+    padding: 0 !important;
+    page-break-before: avoid;
+}
+
+.plachtaUi {
+    page-break-after: always;
+    page-break-inside: avoid;
+}
+
+.portrait {
+    width: 296mm;
+    height: 209mm;
+}
+
+.portrait > div {
+    transform-origin: 0 0;
+    width: 209mm;
+    height: 296mm;
+    transform: rotate(270deg) translate(-209mm, 0);
+}
