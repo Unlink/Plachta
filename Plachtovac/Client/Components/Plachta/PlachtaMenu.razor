@@ -1,11 +1,15 @@
 ﻿@using Newtonsoft.Json
 @using Blazorise
 @using Plachtovac.Client.Components.Forms
+@using Plachtovac.Client.Helpers
 @using Plachtovac.Client.Services
 @using Plachtovac.Shared.BO
+@using System.IO
+@using System.Text
 
 @inject PlachtaService PlachtaService
 @inject IModalService Modal
+@inject IJSRuntime JSRuntime
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <li class="nav-item dropdown">
@@ -13,17 +17,31 @@
         File
     </a>
     <div class="dropdown-menu" aria-labelledby="navbarFileDropdown">
-        <a class="dropdown-item" href="editor">New</a>
-        <a class="dropdown-item" href="view">Print</a>
-        <button class="dropdown-item" @onclick="LoadData">Load</button>
+        <button class="dropdown-item" @onclick="NewRozvrh">Nový</button>
+        <button class="dropdown-item btn-fileOpen">
+            Otvoriť
+            <FileEdit Changed="OpenRozvrh" Filter="text/json" />
+        </button>
         @if (PlachtaService.AktualnyRozvrh != null)
         {
-            <button class="dropdown-item" @onclick="SaveData">Save</button>
+            <button class="dropdown-item" @onclick="SaveRozvrh">Uložiť</button>
+        }
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" @onclick="LoadData">Quick Load</button>
+        @if (PlachtaService.AktualnyRozvrh != null)
+        {
+            <button class="dropdown-item" @onclick="SaveData">Quick Save</button>
         }
     </div>
 </li>
 @if (PlachtaService.AktualnyRozvrh != null)
 {
+    <li class="nav-item">
+        <a class="nav-link" href="editor">Editor</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="view">Tlačiť</a>
+    </li>
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarRozvrhDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Rozvrh: @PlachtaService.AktualnyRozvrh.Nazov
@@ -71,38 +89,6 @@
 
 
 @code {
-    async Task SaveData()
-    {
-        var settings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.Objects,
-            PreserveReferencesHandling = PreserveReferencesHandling.Objects
-        };
-
-        await LocalStorage.SetItemAsync("plachta", JsonConvert.SerializeObject(PlachtaService.AktualnyRozvrh, settings));
-
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol ulozeny");
-        var modal = Modal.Show<YesNoModal>($"Information", parameters);
-        var result = await modal.Result;
-    }
-
-    async Task LoadData()
-    {
-        var settings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.Objects,
-            PreserveReferencesHandling = PreserveReferencesHandling.Objects
-        };
-        PlachtaService.AktualnyRozvrh = JsonConvert.DeserializeObject<Rozvrh>(await LocalStorage.GetItemAsync<string>("plachta"), settings);
-
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
-        var modal = Modal.Show<YesNoModal>($"Information", parameters);
-        var result = await modal.Result;
-        StateHasChanged();
-    }
-
     private async Task SetupRozvrh()
     {
         var parameters = new ModalParameters();
@@ -142,9 +128,111 @@
         var result = await modal.Result;
         if (!result.Cancelled)
         {
-            PlachtaService.AktualnyRozvrh.Veduci.Remove(veduci);
-            StateHasChanged();
+            PlachtaService.AktualnyRozvrh.OdstranVeduceho(veduci);
         }
+    }
+
+    public async Task SaveData()
+    {
+        var json = PlachtaService.ExportRozvrh();
+        Console.WriteLine(json);
+        await LocalStorage.SetItemAsync<string>("plachta", Converters.ToBase64(json));
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol ulozeny");
+        Modal.Show<YesNoModal>($"Information", parameters);
+    }
+
+    public async Task LoadData()
+    {
+        if (PlachtaService.AktualnyRozvrh != null)
+        {
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), "Skutočne chcete načítať rozvrh? Neuložené zmeny budú stratené");
+            var modal = Modal.Show<YesNoModal>($"Information", parameters);
+            if ((await modal.Result).Cancelled)
+            {
+                return;
+            }
+        }
+        try
+        {
+            PlachtaService.LoadFromJson(Converters.FromBase64(await LocalStorage.GetItemAsync<string>("plachta")));
+
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
+            Modal.Show<YesNoModal>($"Information", parameters);
+        }
+        catch
+        {
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), "Nepodrilo sa načítať rozvrh");
+            Modal.Show<YesNoModal>($"Information", parameters);
+        }
+        StateHasChanged();
+    }
+
+    private async Task NewRozvrh()
+    {
+        if (PlachtaService.AktualnyRozvrh != null)
+        {
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), "Skutočne chcete vytvoriť nový rozvrh? Neuložené zmeny budú stratené");
+            var modal = Modal.Show<YesNoModal>($"Information", parameters);
+            if ((await modal.Result).Cancelled)
+            {
+                return;
+            }
+        }
+        PlachtaService.CreateNew();
+    }
+
+    private async Task OpenRozvrh(FileChangedEventArgs e)
+    {
+        try
+        {
+            var file = e.Files.FirstOrDefault();
+            if (file != null)
+            {
+                if (PlachtaService.AktualnyRozvrh != null)
+                {
+                    var parameters = new ModalParameters();
+                    parameters.Add(nameof(YesNoModal.Message), "Skutočne chcete otvoriť rozvrh? Neuložené zmeny budú stratené");
+                    var modal = Modal.Show<YesNoModal>($"Information", parameters);
+                    if ((await modal.Result).Cancelled)
+                    {
+                        return;
+                    }
+                }
+
+                using (var ms = new MemoryStream())
+                {
+                    await file.WriteToStreamAsync(ms);
+                    var json = Encoding.UTF8.GetString(ms.ToArray());
+                    PlachtaService.LoadFromJson(json);
+                }
+                {
+                    var parameters = new ModalParameters();
+                    parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
+                    Modal.Show<YesNoModal>($"Information", parameters);
+                }
+
+            }
+        }
+        catch (Exception exc)
+        {
+            Console.WriteLine(exc.Message);
+        }
+        finally
+        {
+            this.StateHasChanged();
+        }
+
+    }
+
+    private async Task SaveRozvrh()
+    {
+        var json = PlachtaService.ExportRozvrh();
+        await FileUtil.SaveAs(JSRuntime, $"{PlachtaService.AktualnyRozvrh.Nazov}.json", json);
     }
 
 }

@@ -3,8 +3,9 @@
 @using Plachtovac.Shared.BO
 @using Plachtovac.Client.Components.Plachta
 
-
+@implements IDisposable
 @inject PlachtaService PlachtaService
+@inject NavigationManager NavigationManager
 
 <PlachtaView Editable="true" Rozvrh="Rozvrh"></PlachtaView>
 
@@ -14,6 +15,19 @@
     protected override void OnInitialized()
     {
         Rozvrh = PlachtaService.AktualnyRozvrh;
+        if (Rozvrh == null) NavigationManager.NavigateTo("/");
+        PlachtaService.RozvrhChanged += PlachtaServiceOnRozvrhChanged;
+    }
+
+    private void PlachtaServiceOnRozvrhChanged(object sender, Rozvrh e)
+    {
+        StateHasChanged();
+    }
+
+
+    public void Dispose()
+    {
+        PlachtaService.RozvrhChanged -= PlachtaServiceOnRozvrhChanged;
     }
 
 }

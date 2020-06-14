@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Plachtovac.Shared.BO.GraphicsBlocks;
 
 namespace Plachtovac.Shared.BO
 {
@@ -15,7 +16,7 @@ namespace Plachtovac.Shared.BO
 
         public List<AktivitaVeduci> Veduci { get; set; } = new List<AktivitaVeduci>();
 
-        public List<AktivitaItem> AktivitaItems { get; } = new List<AktivitaItem>();
+        public List<GraphicsItem> AktivitaItems { get; } = new List<GraphicsItem>();
 
         private string _design;
         public string Design

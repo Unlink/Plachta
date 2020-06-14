@@ -1,0 +1,60 @@
+﻿@using Plachtovac.Shared.BO.GraphicsBlocks
+@using Blazorise
+@using System.ComponentModel
+
+
+@if (GraphicsItem is TextGraphicsItem textItem)
+{
+    @if (!(GraphicsItem is ZoznamVeducichTextGraphicsItem))
+    {
+        <Field>
+            <FieldLabel>Text</FieldLabel>
+            <TextEdit @bind-Text="@textItem.Text" Placeholder="Text" />
+        </Field>
+    }
+    else
+    {
+        <Field>
+            <FieldLabel>Počet riadkov</FieldLabel>
+            <NumericEdit TValue="int" ValueChanged="PocetRiadkovChanged" Value="((ZoznamVeducichTextGraphicsItem) GraphicsItem).PocetRiadkov" Step="1" Decimals="0" />
+        </Field>
+    }
+    <Field>
+        <FieldLabel>Font</FieldLabel>
+        <Select @bind-SelectedValue="@textItem.FontFamily" TValue="string">
+            @foreach (var font in _fonts)
+            {
+                <SelectItem Value="@font">@font</SelectItem>
+            }
+        </Select>
+    </Field>
+    <Field>
+        <FieldLabel>Text</FieldLabel>
+        <input type="color" @bind="textItem.Fill" />
+    </Field>
+}
+
+@code {
+
+    [Parameter]
+    public GraphicsItem GraphicsItem { get; set; }
+
+    [Parameter]
+    public ComponentBase Parent { get; set; }
+
+    private string[] _fonts = new[] { "Arial", "Comic Sans" };
+
+
+    private async Task PocetRiadkovChanged(int newValue)
+    {
+        if (GraphicsItem is ZoznamVeducichTextGraphicsItem zv && Parent is AktivitaDesignerView parent)
+        {
+            if (newValue > 0)
+            {
+                zv.PocetRiadkov = newValue;
+                zv.NastavZoznamVeducich(parent.Sablona.Veduci);
+                parent.SelectedGraphicsItemOnPropertyChanged(this, new PropertyChangedEventArgs(nameof(ZoznamVeducichTextGraphicsItem.Text)));
+            }
+        }
+    }
+}

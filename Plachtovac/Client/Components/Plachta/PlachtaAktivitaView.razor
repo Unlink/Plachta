@@ -7,7 +7,7 @@
 
 @inject IJSRuntime JSRuntime
 
-<div @ref="AktivitaHtmlElement" class="aktivita" draggable="true"
+<div @ref="AktivitaHtmlElement" class="aktivita @(HilightAktivita() ? "veduci-aktivity" : "")" draggable="true"
       @ondragstart="e => HandleDragStart(e)"
       @ondragend="e => HandleDragEnd(e)"
       style="left: @Pozicia.ToString("N", CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N", CultureInfo.InvariantCulture)%">
@@ -61,6 +61,23 @@
     public void Dispose()
     {
         Aktivita.PropertyChanged -= AktivitaOnPropertyChanged;
+    }
+
+    private bool HilightAktivita()
+    {
+        if (PlachtaView.VeduciToHilight == null)
+        {
+            return false;
+        }
+        if (Aktivita.Veduci != null && Aktivita.Veduci.Any(a => a.Veduci == PlachtaView.VeduciToHilight))
+        {
+            return true;
+        }
+        if (Aktivita.Veduci == null && Aktivita.Sablona.Veduci != null && Aktivita.Sablona.Veduci.Any(a => a.Veduci == PlachtaView.VeduciToHilight))
+        {
+            return true;
+        }
+        return false;
     }
 
 }

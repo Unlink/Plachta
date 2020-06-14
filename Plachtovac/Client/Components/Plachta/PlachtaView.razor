@@ -1,18 +1,35 @@
 ﻿@using Blazorise
 @using BlazorContextMenu
 @using Plachtovac.Client.Components.Forms
+@using Plachtovac.Client.Helpers
 @using Plachtovac.Shared.BO
+@using System.Globalization
 
+@implements IDisposable
 @inject IModalService Modal
+@inject IJSRuntime JSRuntime
 
 <div class="plachtaUi">
     <CascadingValue Value="this">
-        <div class="plachta-view @(!Editable ? "readonly" : "")">
-            <div>
+        <div class="plachta-view @(!Editable ? "readonly" : "")" style="@(Editable && BoundingBox.width > 0 ? $"width:{BoundingBox.width:0}px; height: {BoundingBox.height:0}px" : "")">
+            <div @ref="PlachtaElement" style="@(Editable && BoundingBox.width > 0 ? $"width:{BoundingBox.width:0}px; height: {BoundingBox.height:0}px" : "")">
                 <div>
                     @foreach (var den in Rozvrh.Dni)
                     {
                         <PlachtaDenView Den="den"></PlachtaDenView>
+                    }
+
+                    @if (!_overlayEditMode)
+                    {
+                        <div class="plachtaOverlaySvg">
+                            @((MarkupString) Rozvrh.CustomGraphicsOverlay)
+                        </div>
+                    }
+                    else if (Editable)
+                    {
+                        <div class="plachtaOverlayCanvas @(_overlayEditMode ? "edit-mode" : "")">
+                            <canvas @ref="OverlayCanvas" width="@BoundingBox.width.ToString("0")" height="@BoundingBox.height.ToString("0")"></canvas>
+                        </div>
                     }
                 </div>
             </div>
@@ -34,9 +51,36 @@
     public bool Editable { get; set; }
 
     [Parameter]
+    public Veduci VeduciToHilight { get; set; }
+
+    [Parameter]
     public Rozvrh Rozvrh { get; set; }
 
     public PlachtaAktivitaView SelectedAktivita { get; set; }
+
+    public ElementReference OverlayCanvas { get; set; }
+    public ElementReference PlachtaElement { get; set; }
+
+    public BoundingClientRect BoundingBox { get; set; }
+
+    private bool _overlayEditMode = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            BoundingBox = await JSRuntime.InvokeAsync<BoundingClientRect>("Plachtovac.getBoundingClientRect", PlachtaElement);
+            StateHasChanged();
+            Rozvrh.RozvrhChanged += RozvrhOnRozvrhChanged;
+        }
+    }
+
+    private void RozvrhOnRozvrhChanged(object sender, EventArgs e)
+    {
+        Console.WriteLine("Rozvrh changed");
+        StateHasChanged();
+    }
 
     public void DeleteActivity(ItemClickEventArgs e)
     {
@@ -53,4 +97,25 @@
         parameters.Add(nameof(AktivitaPropertiesForm.Rozvrh), Rozvrh);
         Modal.Show<AktivitaPropertiesForm>($"Aktivita {aktivita.Nazov}", parameters);
     }
+
+    public async Task EnableOverlayEdit()
+    {
+        _overlayEditMode = true;
+        StateHasChanged();
+    }
+
+    public void DisableOverlayEdit()
+    {
+        _overlayEditMode = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (Rozvrh != null)
+        {
+            Rozvrh.RozvrhChanged -= RozvrhOnRozvrhChanged;
+        }
+    }
+
 }

@@ -4,13 +4,12 @@
 
 @inject IModalService Modal
 
-
-s<div class="plachtaToolBar">
+<div class="plachtaToolBar">
     <div class="accordion">
         @if (Rozvrh.PocetDni > 0)
         {
             <div class="card">
-                <div class="card-header" id="headingAktivity" data-toggle="collapse" data-target="#aktivity_sablony">
+                <div class="card-header collapsed" id="headingAktivity" data-toggle="collapse" data-target="#aktivity_sablony">
                     Aktivity
                 </div>
 
@@ -21,6 +20,19 @@ s<div class="plachtaToolBar">
                 </div>
             </div>
         }
+        <Card>
+            <div class="card-header @(OverlayEditShown ? "" : "collapsed")" @onclick="ToggleOverlayEditor">
+                Overlay
+            </div>
+            @if (OverlayEditShown)
+            {
+                <div class="collapse show" data-parent=".accordion">
+                    <div class="card-body">
+                        <OverlayDesigner @ref="OverlayDesigner" CanvasElement="PlachtaView.OverlayCanvas"></OverlayDesigner>
+                    </div>
+                </div>
+            }
+        </Card>
     </div>
 </div>
 
@@ -29,4 +41,31 @@ s<div class="plachtaToolBar">
     public PlachtaView PlachtaView { get; set; }
 
     public Rozvrh Rozvrh => PlachtaView.Rozvrh;
+
+    public bool OverlayEditShown { get; set; }
+
+    public OverlayDesigner OverlayDesigner { get; set; }
+
+    public async Task ToggleOverlayEditor()
+    {
+        if (!OverlayEditShown)
+        {
+            OverlayEditShown = true;
+            await PlachtaView.EnableOverlayEdit();
+        }
+        else
+        {
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), "Chcete uložiť vytvorený overlay?");
+            var modal = Modal.Show<YesNoModal>($"Information", parameters);
+            var result = await modal.Result;
+            if (!result.Cancelled)
+            {
+                await OverlayDesigner.Save();
+            }
+            OverlayEditShown = false;
+            PlachtaView.DisableOverlayEdit();
+        }
+    }
+
 }

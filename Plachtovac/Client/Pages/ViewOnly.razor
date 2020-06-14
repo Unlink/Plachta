@@ -5,16 +5,35 @@
 
 
 @inject PlachtaService PlachtaService
+@inject NavigationManager NavigationManager
 
-<PlachtaView Editable="false" Rozvrh="Rozvrh"></PlachtaView>
-
-<PlachtaView Editable="false" Rozvrh="Rozvrh"></PlachtaView>
-
-<div class="portrait">
-    <div>
-        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+@foreach (var veduci in Rozvrh.Veduci)
+{
+    <div class="portrait">
+        <div>
+            <h1>@veduci.Prezyvka</h1>
+            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+            <h4>Povinnosti</h4>
+            <p>@veduci.Povinnosti</p>
+            <h4>Aktivity</h4>
+            @foreach (var den in Rozvrh.Dni)
+            {
+                foreach (var aktivita in den.Aktivity)
+                {
+                    if (aktivita.JeVeduci(veduci))
+                    {
+                        <span style="margin-right: 3px;">@(DniVTyzdni.GetDen((den.Poradie + PlachtaService.AktualnyRozvrh.Zaciatok) % 7))</span>
+                        <span style="margin-right: 3px;">@aktivita.Time.ToString("hh\\:mm"):</span>
+                        <span style="margin-right: 3px;">@aktivita.Nazov -</span>
+                        <span style="margin-right: 3px;">@aktivita.GetPopisVeduceho(veduci)</span>
+                        <br/>
+                    }
+                }
+            }
+        </div>
     </div>
-</div>
+    <PlachtaView Editable="false" Rozvrh="Rozvrh" VeduciToHilight="veduci"></PlachtaView>
+}
 
 @code {
     public Rozvrh Rozvrh { get; private set; }
@@ -22,6 +41,7 @@
     protected override void OnInitialized()
     {
         Rozvrh = PlachtaService.AktualnyRozvrh;
+        if (Rozvrh == null) NavigationManager.NavigateTo("/");
     }
 
 }

@@ -1,13 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using Plachtovac.Shared.BO.GraphicsBlocks;
 
 namespace Plachtovac.Shared.BO
 {
     public class Rozvrh
     {
+        private int _zaciatok;
 
-        public int Zaciatok { get; set; }
+        public int Zaciatok
+        {
+            get => _zaciatok;
+            set
+            {
+                _zaciatok = value;
+                RozvrhChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         public string ZaciatokStr => DniVTyzdni.GetDen(Zaciatok);
 
@@ -23,6 +34,11 @@ namespace Plachtovac.Shared.BO
         public int PocetDni => Dni.Count;
         public string Nazov { get; set; }
 
+        public List<GraphicsItem> CustomGraphicsItems { get; } = new List<GraphicsItem>();
+        public string CustomGraphicsOverlay { get; set; } = "";
+        public ElementSize CustomGraphicsCanvasSize { get; set; }
+
+        public event EventHandler RozvrhChanged; 
 
         public void PresunAktivitu(Aktivita aktivita, Den den, TimeSpan timeSpan)
         {
@@ -63,6 +79,7 @@ namespace Plachtovac.Shared.BO
                     Dni.AddLast(new Den(poradie));
                 }
             }
+            RozvrhChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public bool Koliduje(Aktivita aktivita, TimeSpan time, TimeSpan trvanie)
@@ -71,6 +88,49 @@ namespace Plachtovac.Shared.BO
             var den = Dni.FirstOrDefault(d => d.Aktivity.Contains(aktivita));
             if (den == null || den.Koliduje(time, aktivita, trvanie)) return true;
             return false;
+        }
+
+        public void OdstranSablonu(AktivitaSablona sablona)
+        {
+            foreach (var aktivita in Dni.SelectMany(d => d.Aktivity).ToList())
+            {
+                if (aktivita.Sablona == sablona)
+                {
+                    OdstranAktivitu(aktivita);
+                }
+            }
+
+            SablonyAktivit.Remove(sablona);
+            RozvrhChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OdstranVeduceho(Veduci veduci)
+        {
+            foreach (var aktivita in Dni.SelectMany(d => d.Aktivity).ToList())
+            {
+                var veduciVSablone = aktivita.Sablona.Veduci?.SingleOrDefault(v => v.Veduci == veduci);
+                if (veduciVSablone != null)
+                {
+                    aktivita.Sablona.Veduci.Remove(veduciVSablone);
+                }
+
+                var veduciVAktivite = aktivita.Veduci?.SingleOrDefault(v => v.Veduci == veduci);
+                if (veduciVAktivite != null)
+                {
+                    aktivita.Veduci.Remove(veduciVAktivite);
+                }
+            }
+
+            foreach (var den in Dni)
+            {
+                if (den.Veduci == veduci)
+                {
+                    den.Veduci = null;
+                }
+            }
+
+            Veduci.Remove(veduci);
+            RozvrhChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

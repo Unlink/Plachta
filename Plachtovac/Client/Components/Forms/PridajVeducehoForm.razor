@@ -6,6 +6,11 @@
     <TextEdit @ref="TextEditPrezyvka" @bind-Text="@prezyvka" Placeholder="Prezývka" />
 </Field>
 
+<Field>
+    <FieldLabel>Úlohy</FieldLabel>
+    <MemoEdit @bind-Text="@ulohy" Placeholder="Ulohy" />
+</Field>
+
 <button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
 <button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
 @code {
@@ -20,6 +25,7 @@
         {
             _veduci = value;
             prezyvka = _veduci?.Prezyvka;
+            ulohy = _veduci?.Povinnosti;
         }
     }
 
@@ -28,16 +34,21 @@
     private TextEdit TextEditPrezyvka;
 
     private string prezyvka;
+    private string ulohy;
 
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
-        TextEditPrezyvka.Focus(true);
+        if (firstRender)
+        {
+            TextEditPrezyvka.Focus(true);
+        }
     }
 
     void SubmitForm()
     {
         Veduci.Prezyvka = prezyvka;
+        Veduci.Povinnosti = ulohy;
         BlazoredModal.Close(ModalResult.Ok(Veduci));
     }
 

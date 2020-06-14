@@ -12,14 +12,20 @@
     <li draggable="true" @ondragstart="e => HandleDragStart(e, sablona)">
         <span class="small">@sablona.Nazov</span>
         <div class="sablonaContent">
-            <div class="sablonaPreview" style="width: 100%; height: 45px;">
+            <div class="sablonaPreview" style="width: 100%; height: 50px;">
                 @((MarkupString)sablona.Design)
             </div>
             <div class="sablonaButtons">
-                <Button class="btn btn-sm" @onclick="() => EditujSablonu(sablona)"><i class="text-primary fas fa-edit"></i></Button>
-                <Button class="btn btn-sm" @onclick="() => EditujDesign(sablona)"><i class="text-info fas fa-pencil-ruler"></i></Button>
-                <Button class="btn btn-sm" @onclick="() => EditujSablonu(sablona)"><i class="text-danger fas fa-trash"></i></Button>
-            </div>
+                <Tooltip Text="Uprav šablónu">
+                    <Button class="btn btn-sm btn-clear-white" @onclick="() => EditujSablonu(sablona)"><i class="text-primary fas fa-edit"></i></Button>
+                </Tooltip>
+                <Tooltip Text="Uprav design">
+                    <Button class="btn btn-sm btn-clear-white" @onclick="() => EditujDesign(sablona)"><i class="text-info fas fa-pencil-ruler"></i></Button>
+                </Tooltip>
+                <Tooltip Text="Odstráň šablónu">
+                    <Button class="btn btn-sm btn-clear-white" @onclick="() => OdstranSablonu(sablona)"><i class="text-danger fas fa-trash"></i></Button>
+                </Tooltip>
+                </div>
         </div>
     </li>
     }
@@ -88,4 +94,17 @@
 #pragma warning restore BL0005 // Component parameter should not be set outside of its component.
         };
     }
+
+    private async Task OdstranSablonu(AktivitaSablona sablona)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Odstránením šablóny odstránite aj všetky aktivity.");
+        var modal = Modal.Show<YesNoModal>($"Skutočne chcete odstrániť šabonu {sablona.Nazov}?", parameters);
+        var result = await modal.Result;
+        if (!result.Cancelled)
+        {
+            PlachtaView.Rozvrh.OdstranSablonu(sablona);
+        }
+    }
+
 }

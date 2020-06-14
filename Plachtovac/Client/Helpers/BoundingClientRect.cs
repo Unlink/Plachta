@@ -1,6 +1,6 @@
 ﻿namespace Plachtovac.Client.Helpers
-{
-    public class BoundingClientRect
+{ 
+    public struct BoundingClientRect
     {
         public double x { get; set; }
         public double y { get; set; }

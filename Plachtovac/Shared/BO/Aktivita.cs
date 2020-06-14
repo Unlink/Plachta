@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml;
+using Plachtovac.Shared.BO.GraphicsBlocks;
 
 namespace Plachtovac.Shared.BO
 {
@@ -20,7 +21,11 @@ namespace Plachtovac.Shared.BO
                 if (_sablona != value)
                 {
                     _sablona = value;
-                    _sablona.PropertyChanged += (sender, args) => OnPropertyChanged(nameof(Sablona));
+                    _sablona.PropertyChanged += (sender, args) =>
+                    {
+                        OnPropertyChanged(nameof(Sablona));
+                        _design = null;
+                    };
                 }
             }
         }
@@ -62,7 +67,7 @@ namespace Plachtovac.Shared.BO
                 if (Veduci == null) return Sablona.Design;
                 if (_design != null) return _design;
 
-                var zoznamVeducich = Sablona.AktivitaItems.Select(i => i as ZoznamVeducichTextAktivitaItem)
+                var zoznamVeducich = Sablona.AktivitaItems.Select(i => i as ZoznamVeducichTextGraphicsItem)
                     .Where(i => i != null);
                 try
                 {
@@ -106,118 +111,23 @@ namespace Plachtovac.Shared.BO
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-    }
 
-    public abstract class AktivitaItem
-    {
-        public string Id { get; set; }
-        public double Left { get; set; }
-        public double Top { get; set; }
-        public double Width { get; set; }
-        public double Height { get; set; }
-        public double ScaleX { get; set; }
-        public double ScaleY { get; set; }
-        public double Angle { get; set; }
-        public bool FlipX { get; set; }
-        public bool FlipY { get; set; }
-    }
-
-    public class ZoznamVeducichTextAktivitaItem : TextAktivitaItem
-    {
-        private int _pocetRiadkov;
-
-        public int PocetRiadkov
+        private AktivitaVeduci GetAktivitaVeduci(Veduci veduci)
         {
-            get => _pocetRiadkov;
-            set
-            {
-                if (value == _pocetRiadkov) return;
-                _pocetRiadkov = value;
-                OnPropertyChanged();
-            }
+            return (
+                Veduci?.FirstOrDefault(v => v.Veduci == veduci) ??
+                Sablona.Veduci?.FirstOrDefault(v => v.Veduci == veduci)
+                );
         }
 
-        public void NastavZoznamVeducich(List<AktivitaVeduci> veduci)
+        public bool JeVeduci(Veduci veduci)
         {
-            Text = string.Join('\n', VygenerujZoznamVeducich(veduci));
-            Console.WriteLine(Text);
+            return GetAktivitaVeduci(veduci) != null;
         }
 
-        public string[] VygenerujZoznamVeducich(List<AktivitaVeduci> veduci)
+        public string GetPopisVeduceho(Veduci veduci)
         {
-            var veducichNaRiadok = (int)Math.Ceiling(veduci.Count / (double)PocetRiadkov);
-            var riadky = new string[PocetRiadkov];
-            for (int i = 0; i < PocetRiadkov; i++)
-            {
-                riadky[i] = "";
-            }
-
-            for (int i = 0; i < veduci.Count; i++)
-            {
-                riadky[i / veducichNaRiadok] += veduci[i].Veduci.Prezyvka + ", ";
-            }
-
-            for (int i = 0; i < PocetRiadkov; i++)
-            {
-                riadky[i] = riadky[i].Trim(',', ' ');
-            }
-
-            return riadky;
+            return GetAktivitaVeduci(veduci)?.Popis ?? "";
         }
     }
-
-    public class TextAktivitaItem : AktivitaItem, INotifyPropertyChanged
-    {
-        private string _text;
-        private string _fill;
-        private string _fontFamily;
-
-        public string Text
-        {
-            get => _text;
-            set
-            {
-                if (value == _text) return;
-                _text = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Fill
-        {
-            get => _fill;
-            set
-            {
-                if (value == _fill) return;
-                _fill = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string FontFamily
-        {
-            get => _fontFamily;
-            set
-            {
-                if (value == _fontFamily) return;
-                _fontFamily = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    public class ObrazokAktivitaItem : AktivitaItem
-    {
-        public string Image { get; set; }
-
-    }
-
 }

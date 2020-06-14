@@ -1,0 +1,48 @@
+﻿@using Blazorise
+
+<p>
+    @Message
+    <Field>
+        <FieldLabel>@Title</FieldLabel>
+        <TextEdit @ref="TextElement" @bind-Text="@Data" Placeholder="@Title"  />
+    </Field>
+</p>
+
+<div class="float-right">
+    <Button @onclick="SubmitForm" class="btn btn-primary">Ok</Button>
+    <Button @onclick="Cancel" class="btn btn-secondary">Cancel</Button>
+</div>
+@code {
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public string Message { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    public string Data { get; set; }
+
+    private TextEdit TextElement;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            TextElement.Focus();
+        }
+    }
+
+    void SubmitForm()
+    {
+        BlazoredModal.Close(ModalResult.Ok(Data));
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
+    }
+
+}

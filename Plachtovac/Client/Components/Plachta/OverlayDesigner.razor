@@ -1,0 +1,121 @@
+﻿@using Plachtovac.Shared.BO
+@using Plachtovac.Client.Helpers
+@using Plachtovac.Client.Services
+@using System.ComponentModel
+@using Blazor.FileReader
+@using Blazorise
+@using Newtonsoft.Json
+@using JsonSerializer = System.Text.Json.JsonSerializer
+@using Plachtovac.Shared.BO.GraphicsBlocks
+
+@inherits CanvasEditor
+
+
+@if (_imageConversionInProgress)
+{
+    <div class="align-content-center">
+        <i class="fa-4x fas fa-cog fa-spin"></i>
+        <br />
+        <p id="loadingText" class="mt-3">Spracovávam obrázok</p>
+    </div>
+}
+
+<h4 class="font-weight-bold">Pridaj nové</h4>
+<div>
+    <a class="dropdown-item" @onclick="() => InsertText()">Textové pole</a>
+    <a class="dropdown-item" @onclick="() => InsertExternalImage(1000, 1000)">Obrázok z URL</a>
+    <a class="dropdown-item btn btn-fileOpen">
+        Obrázok zo súboru
+        <FileEdit Changed="InsertFile" Filter="image/*" />
+    </a>
+</div>
+
+@if (SelectedItem != null)
+{
+    <h4 class="font-weight-bold">Vlastnosti</h4>
+    <DesignerItemProperties GraphicsItem="SelectedItem" Parent="this"></DesignerItemProperties>
+}
+
+
+@code {
+    [CascadingParameter]
+    public PlachtaView PlachtaView { get; set; }
+
+    private bool _imageConversionInProgress;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            var scaleX = CurrentCanvasSize.Width / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Width;
+            var scaleY = CurrentCanvasSize.Height / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Height;
+
+
+            foreach (var item in PlachtaView.Rozvrh.CustomGraphicsItems)
+            {
+                //Coppy object
+                var itemClone = (GraphicsItem)JsonSerializer.Deserialize(JsonConvert.SerializeObject(item), item.GetType());
+                itemClone.Left *= scaleX;
+                itemClone.Top *= scaleY;
+                itemClone.ScaleX *= scaleX;
+                itemClone.ScaleY *= scaleY;
+                await InsertItem(itemClone);
+            }
+        }
+    }
+
+    public async Task InsertFile(FileChangedEventArgs e)
+    {
+        try
+        {
+            foreach (var file in e.Files)
+            {
+                _imageConversionInProgress = true;
+                StateHasChanged();
+                await InsertFile(file, 1000, 1000);
+                _imageConversionInProgress = false;
+            }
+        }
+        catch (Exception exc)
+        {
+            Console.WriteLine(exc.Message);
+        }
+        finally
+        {
+            this.StateHasChanged();
+        }
+    }
+
+    public override async Task InsertExternalImage(int width = 0, int height = 0)
+    {
+        try
+        {
+
+            _imageConversionInProgress = true;
+            StateHasChanged();
+            await base.InsertExternalImage(width, height);
+        }
+        finally
+        {
+            _imageConversionInProgress = false;
+            StateHasChanged();
+        }
+    }
+
+    public async Task Save()
+    {
+        var svg = await JSRuntime.InvokeAsync<string>("FabricJSBindings.export", CanvasElement);
+        Console.WriteLine(svg.Replace("\n", "").Replace("\r", ""));
+        PlachtaView.Rozvrh.CustomGraphicsOverlay = svg;
+
+        PlachtaView.Rozvrh.CustomGraphicsItems.Clear();
+        foreach (var item in Items.Values)
+        {
+            PlachtaView.Rozvrh.CustomGraphicsItems.Add(item.Value.M);
+            PlachtaView.Rozvrh.CustomGraphicsCanvasSize = CurrentCanvasSize;
+        }
+    }
+
+}
