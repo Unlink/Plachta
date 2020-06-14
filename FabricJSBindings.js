@@ -87,7 +87,7 @@ FabricJSBindings.addText = (function (element, id, objRef, properties) {
 FabricJSBindings.addImage = (function (element, id, objRef, properties) {
     console.log(properties);
 
-    fabric.Image.fromURL(properties.image, function (oImg) {
+    fabric.Image.fromURL(properties.image || properties.url, function (oImg) {
         oImg.set(properties);
 
         oImg.on('selected', function () {
@@ -173,6 +173,23 @@ FabricJSBindings.resizeImage = (function (image, maxWidth, maxHeight) {
                     width: canvas.width,
                     height: canvas.height,
                     data: canvas.toDataURL()
+                }
+            );
+        }
+        img.src = image;
+    });
+
+    return promise;
+});
+
+
+FabricJSBindings.getImageSize = (function (image) {
+    var promise = new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.onload = function () {
+            resolve({
+                    width: img.width,
+                    height: img.height
                 }
             );
         }
