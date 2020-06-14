@@ -1,4 +1,7 @@
-﻿<Router AppAssembly="@typeof(Program).Assembly">
+﻿@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
@@ -8,3 +11,18 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code{
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (await LocalStorage.ContainKeyAsync("path"))
+        {
+            var path = await LocalStorage.GetItemAsync<string>("path");
+            await LocalStorage.RemoveItemAsync("path");
+            NavigationManager.NavigateTo(path);
+        }
+    }
+
+}
