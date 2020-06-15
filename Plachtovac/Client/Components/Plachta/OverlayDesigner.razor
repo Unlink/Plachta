@@ -49,8 +49,13 @@
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
-            var scaleX = CurrentCanvasSize.Width / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Width;
-            var scaleY = CurrentCanvasSize.Height / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Height;
+            var scaleX = 1.0;
+            var scaleY = 1.0;
+            if (PlachtaView.Rozvrh.CustomGraphicsCanvasSize != null)
+            {
+                scaleX = CurrentCanvasSize.Width / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Width;
+                scaleY =  CurrentCanvasSize.Height / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Height;
+            }
 
 
             foreach (var item in PlachtaView.Rozvrh.CustomGraphicsItems)
