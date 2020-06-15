@@ -63,6 +63,10 @@ a, .btn-link {
     cursor: pointer;
 }
 
+.btn-task {
+    text-transform: none;
+}
+
 @media all and (display-mode: standalone) {
     .navbar-brand {
         display: none;
@@ -369,6 +373,15 @@ ul.sablonyAktivit {
 .accordion .card-header.collapsed:after {
     /* symbol for "collapsed" panels */
     content: "\f105";
+}
+
+
+.veduci-ulohy {
+    width: 380px;
+}
+
+.veduci-ulohy button {
+    margin-bottom: 5px;
 }
 
 /*.aktivita-components {
