@@ -1,21 +1,71 @@
 ﻿@using Blazorise
+@using Blazorise.Components
+@using Plachtovac.Client.Services
 @using Plachtovac.Shared.BO
+
+@inject PlachtaService PlachtaService
 
 <Field>
     <FieldLabel>Prezývka</FieldLabel>
     <TextEdit @ref="TextEditPrezyvka" @bind-Text="@prezyvka" Placeholder="Prezývka" />
 </Field>
 
+
 <Field>
+    <FieldLabel>Fotka</FieldLabel>
+    <TextEdit Role="TextRole.Url" @bind-Text="@fotka" Placeholder="Fotka" />
+</Field>
+
+<Field>
+    <FieldLabel>Povinnosti</FieldLabel>
+    <MemoEdit @bind-Text="@povinnosti" Placeholder="Povinnosti veduceho" />
+</Field>
+
+<Field>
+    <FieldLabel>Družinka</FieldLabel>
+    <Select @bind-SelectedValue="druzinka">
+        <SelectItem Value="string.Empty">-</SelectItem>
+        @foreach (var druzinka in druzinky)
+        {
+            <SelectItem Value="druzinka">@druzinka</SelectItem>
+        }
+    </Select>
+
+</Field>
+
+<Field class="veduci-ulohy">
     <FieldLabel>Úlohy</FieldLabel>
-    <MemoEdit @bind-Text="@ulohy" Placeholder="Ulohy" />
+    @if (ulohy != null)
+    {
+        <div>
+            @foreach (var uloha in ulohy)
+            {
+                <Button class="btn btn-primary btn-task btn-sm" @onclick="() => OdstranUlohu(uloha)">@uloha</Button>
+            }
+        </div>
+    }
+    <TextEdit Text="@ulohaInput" TextChanged="@UlohaTextChanged"></TextEdit>
+    @if (ulohyHint.Count > 0)
+    {
+        <Dropdown Visible="true">
+            <DropdownMenu>
+                @foreach (var item in ulohyHint)
+                {
+                    <DropdownItem @onclick="() => PridajUlohu(item)">@item</DropdownItem>
+                }
+            </DropdownMenu>
+        </Dropdown>
+    }
+    <Button @onclick="() => PridajUlohu(ulohaInput)">Pridaj</Button>
+
 </Field>
 
 <button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
 <button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
 @code {
 
-    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; }
 
     [Parameter]
     public Veduci Veduci
@@ -25,16 +75,28 @@
         {
             _veduci = value;
             prezyvka = _veduci?.Prezyvka;
-            ulohy = _veduci?.Povinnosti;
+            povinnosti = _veduci?.Povinnosti;
+            druzinka = _veduci?.Druzinka;
+            fotka = _veduci?.Fotka;
+            ulohy = _veduci?.Ulohy ?? new List<string>();
         }
     }
+
+    private string[] druzinky = {"Modrí", "Červení", "Zelení", "Žltí"};
+    private string[] dostupneUlohy;
 
     private Veduci _veduci = new Veduci();
 
     private TextEdit TextEditPrezyvka;
 
     private string prezyvka;
-    private string ulohy;
+    private string povinnosti;
+    private string druzinka;
+    private string fotka;
+    private List<string> ulohy = new List<string>();
+
+    private string ulohaInput;
+    private List<string> ulohyHint = new List<string>();
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -42,19 +104,45 @@
         if (firstRender)
         {
             TextEditPrezyvka.Focus(true);
+            dostupneUlohy = PlachtaService.AktualnyRozvrh.Veduci.SelectMany(v => v.Ulohy).Distinct().ToArray();
         }
     }
 
     void SubmitForm()
     {
         Veduci.Prezyvka = prezyvka;
-        Veduci.Povinnosti = ulohy;
+        Veduci.Povinnosti = povinnosti;
+        Veduci.Druzinka = druzinka;
+        Veduci.Ulohy = ulohy;
+        Veduci.Fotka = fotka;
         BlazoredModal.Close(ModalResult.Ok(Veduci));
     }
 
     void Cancel()
     {
         BlazoredModal.Cancel();
+    }
+
+    private void OdstranUlohu(string uloha)
+    {
+        ulohy.Remove(uloha);
+    }
+
+    private void PridajUlohu(string uloha)
+    {
+        if (uloha == null) uloha = ulohaInput;
+        ulohy.Add(uloha);
+        UlohaTextChanged("");
+    }
+
+    private void UlohaTextChanged(string value)
+    {
+        ulohaInput = value;
+        ulohyHint.Clear();
+        if (value.Length > 0)
+        {
+            ulohyHint.AddRange(druzinky.Where(d => d.Contains(value)).Take(4));
+        }
     }
 
 }
