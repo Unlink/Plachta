@@ -1,4 +1,5 @@
-﻿@using Blazorise
+﻿@using System.ComponentModel.DataAnnotations
+@using Blazorise
 @using Plachtovac.Client.Helpers
 @using Plachtovac.Shared.BO
 
@@ -16,8 +17,8 @@
 
     <Field>
         <FieldLabel>Trvanie <span class="small">(v minutach)</span></FieldLabel>
-        <Validation Validator="@ValidationRule.IsNotEmpty">
-            <NumericEdit TValue="int" Value="@trvanieAktivity">
+        <Validation Validator="ValidateDuration">
+            <NumericEdit TValue="int" @bind-Value="@trvanieAktivity">
                 <Feedback>
                     <ValidationError />
                 </Feedback>
@@ -25,6 +26,17 @@
         </Validation>
     </Field>
 </Validations>
+<Field>
+    <FieldLabel>Typ aktivity</FieldLabel>
+    <Select @bind-SelectedValue="@typ">
+        <SelectItem Value="String.Empty">-</SelectItem>
+        @foreach (var s in typyAktivit)
+        {
+            <SelectItem Value="s">@s</SelectItem>
+        }
+    </Select>
+
+</Field>
 
 <VeduciAssignForm @ref="assignForm" Rozvrh="@Rozvrh" PriradenyVeduci="@Sablona.Veduci"></VeduciAssignForm>
 
@@ -47,15 +59,20 @@
         {
             _sablona = value;
             nazov = _sablona?.Nazov;
+            typ = _sablona?.Typ;
             trvanieAktivity = (int) Sablona.Trvanie.TotalMinutes;
         }
     }
+
+    private string[] typyAktivit = {"Krúžok", "Seminár", "Prednáška", "Rozprávania"};
 
     private AktivitaSablona _sablona = new AktivitaSablona();
 
     private TextEdit NazovSablony;
 
     private string nazov;
+
+    private string typ;
 
     private int trvanieAktivity;
 
@@ -74,6 +91,7 @@
         if (validations.ValidateAll())
         {
             Sablona.Nazov = nazov;
+            Sablona.Typ = typ;
             Sablona.Trvanie = TimeSpan.FromMinutes(trvanieAktivity);
             Sablona.Veduci.Clear();
             Sablona.Veduci.AddRange(assignForm.GetResult());
@@ -85,6 +103,20 @@
     void Cancel()
     {
         BlazoredModal.Cancel();
+    }
+
+    private void ValidateDuration(ValidatorEventArgs obj)
+    {
+        var val = (int) obj.Value;
+        if (val < 10 || val > 720)
+        {
+            obj.ErrorText = "Čas aktivity musí byť medzi 10 až 720 minútami";
+            obj.Status = ValidationStatus.Error;
+        }
+        else
+        {
+            obj.Status = ValidationStatus.Success;
+        }
     }
 
 }

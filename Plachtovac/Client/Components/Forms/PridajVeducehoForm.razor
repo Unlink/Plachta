@@ -141,7 +141,7 @@
         ulohyHint.Clear();
         if (value.Length > 0)
         {
-            ulohyHint.AddRange(druzinky.Where(d => d.Contains(value)).Take(4));
+            ulohyHint.AddRange(dostupneUlohy.Where(d => d.Contains(value)).Take(4));
         }
     }
 
