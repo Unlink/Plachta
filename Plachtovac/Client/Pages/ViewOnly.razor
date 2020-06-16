@@ -9,26 +9,96 @@
 
 @foreach (var veduci in Rozvrh.Veduci)
 {
-    <div class="portrait">
+    <div class="portrait program-stretnutia">
         <h1>@Rozvrh.Nazov: @Rozvrh.ZaciatokRozvrhu?.ToString("dd.MM") - @veduci.Prezyvka</h1>
-        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-        <h4>Povinnosti</h4>
-        <p>@veduci.Povinnosti</p>
-        <h4>Aktivity</h4>
-        @foreach (var den in Rozvrh.Dni)
-        {
-            foreach (var aktivita in den.Aktivity)
-            {
-                if (aktivita.JeVeduci(veduci))
-                {
-                    <span style="margin-right: 3px;">@(DniVTyzdni.GetDen((den.Poradie + PlachtaService.AktualnyRozvrh.Zaciatok) % 7))</span>
-                    <span style="margin-right: 3px;">@aktivita.Time.ToString("hh\\:mm"):</span>
-                    <span style="margin-right: 3px;">@aktivita.Nazov -</span>
-                    <span style="margin-right: 3px;">@aktivita.GetPopisVeduceho(veduci)</span>
-                    <br />
-                }
-            }
-        }
+
+        <div class="border-top border-left border-black" style="padding: 0 20px;">
+            <div class="row">
+                <div class="col program-dna">
+                    <h2>Program dňa:</h2>
+                    <table>
+                        @foreach (var row in Rozvrh.Program.Split("\n"))
+                        {
+                            var parts = row.Split(" ");
+                            var cas = parts.First();
+                            var program = string.Join(" ", parts.Skip(1));
+                            <span class="program-cas">@cas</span>
+                            @program
+                            <br />
+                        }
+                    </table>
+                </div>
+                <div class="col">
+                    <h2>Môj program</h2>
+                    @foreach (var den in Rozvrh.Dni)
+                    {
+                        foreach (var aktivita in den.Aktivity)
+                        {
+                            if (aktivita.JeVeduci(veduci))
+                            {
+                                <span style="margin-right: 3px;">@(DniVTyzdni.GetDen((den.Poradie + PlachtaService.AktualnyRozvrh.Zaciatok) % 7))</span>
+                                <span style="margin-right: 3px;">@aktivita.Time.ToString("hh\\:mm"):</span>
+                                <span style="margin-right: 3px;">@aktivita.Nazov -</span>
+                                <span style="margin-right: 3px;">@aktivita.GetPopisVeduceho(veduci)</span>
+                                <br />
+                            }
+                        }
+                    }
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="border-rb col-9">
+                    <div class="row">
+                        <div class="col border-0">
+                            <div class="row h-100">
+                                <div class="col col-horizontal">
+                                    <h2>Vedúci družín:</h2>
+                                    todo
+                                </div>
+                                <div class="col col-horizontal">
+                                    <h2>Zoznam krúžkov</h2>
+                                    todo
+                                </div>
+                                <div class="col col-horizontal">
+                                    Čo si mam doniesť?
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col border-right-0 photo">
+                            <img src="@veduci.Fotka" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <string>Bonusy</string>
+                    </div>
+                </div>
+                <div class="border-rb col-3">
+                    <h2>Zoznam prednášok:</h2>
+                    todo
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="border-rb col-9">
+                    <h2>Semináre:</h2>
+                    todo
+                </div>
+                <div class="border-rb col-3">
+                    <h2>Rozprávania:</h2>
+                    todo
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col col-full">
+                    <h2>A ešte</h2>
+                    todo
+                </div>
+            </div>
+        </div>
+
     </div>
     <div class="landscape">
         <PlachtaView Editable="false" Rozvrh="Rozvrh" VeduciToHilight="veduci"></PlachtaView>

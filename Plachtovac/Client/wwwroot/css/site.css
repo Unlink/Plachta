@@ -399,3 +399,30 @@ ul.sablonyAktivit {
     font-size: 1.2rem;
     margin: 0;
 }
+
+.program-stretnutia h2 {
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.program-stretnutia .col, .border-rb {
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.program-stretnutia .col-horizontal {
+    flex: 0 0 100%;
+}
+
+.program-cas {
+    margin-right: 5px;
+    width: 40px;
+    display: inline-block;
+    text-align: right;
+}
+
+.photo {
+    text-align: center;
+    padding: 1px;
+}
