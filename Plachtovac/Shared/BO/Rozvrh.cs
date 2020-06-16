@@ -39,6 +39,7 @@ namespace Plachtovac.Shared.BO
         public List<GraphicsItem> CustomGraphicsItems { get; } = new List<GraphicsItem>();
         public string CustomGraphicsOverlay { get; set; } = "";
         public ElementSize CustomGraphicsCanvasSize { get; set; }
+        public string Program { get; set; }
 
         public event EventHandler RozvrhChanged; 
 

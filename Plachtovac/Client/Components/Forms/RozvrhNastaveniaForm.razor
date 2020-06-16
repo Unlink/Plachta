@@ -38,6 +38,11 @@
     <TextEdit @bind-Text="@KoniecDna" type="time" />
 </Field>
 
+<Field>
+    <FieldLabel>Program</FieldLabel>
+    <MemoEdit @bind-Text="@Program" Placeholder="8:00 nejaky program&#10;10:00 iny&#10;15:00 posledny" />
+</Field>
+
 @if (errors != null) {
 <Alert Color="Color.Danger">
     @errors
@@ -61,6 +66,8 @@
     private string nazovRozvrhu;
 
     private int dni;
+
+    public string Program { get; set; }
 
     private string dniStr
     {
@@ -107,6 +114,7 @@
             Zaciatok = Rozvrh.ZaciatokRozvrhu;
             _zaciatokDna = Rozvrh.ZaciatokDna.ToString(@"hh\:mm");
             _koniecDna = Rozvrh.KoniecDna.ToString(@"hh\:mm");
+            Program = Rozvrh.Program ;
             StateHasChanged();
         }
     }
@@ -132,6 +140,7 @@
             Rozvrh.NastavPocetDni(dni);
             Rozvrh.ZaciatokDna = ParseTime(_zaciatokDna);
             Rozvrh.KoniecDna = ParseTime(_koniecDna);
+            Rozvrh.Program = Program;
             BlazoredModal.Close(ModalResult.Ok(Rozvrh));
         }
     }
