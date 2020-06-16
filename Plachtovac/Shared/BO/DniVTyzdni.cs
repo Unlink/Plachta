@@ -3,7 +3,7 @@
     public class DniVTyzdni
     {
         private static string[] _dniVTyzdni = new[]
-            {"Pondelok", "Utorok", "Streda", "Štvrtok", "Piatok", "Sobota", "Neďeľa"};
+            {"Neďeľa", "Pondelok", "Utorok", "Streda", "Štvrtok", "Piatok", "Sobota"};
 
         public static string[] GetAll()
         {

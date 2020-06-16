@@ -24,17 +24,8 @@
 </Field>
 
 <Field>
-    <FieldLabel>Začiatok</FieldLabel>
-    <Select @bind-SelectedValue="@zaciatok" TValue="int">
-        <SelectItem Value="0">Pondelok</SelectItem>
-        <SelectItem Value="1">Utorok</SelectItem>
-        <SelectItem Value="2">Streda</SelectItem>
-        <SelectItem Value="3">Štvrtok</SelectItem>
-        <SelectItem Value="4">Piatok</SelectItem>
-        <SelectItem Value="5">Sobota</SelectItem>
-        <SelectItem Value="6">Nedeľa</SelectItem>
-    </Select>
-
+    <FieldLabel>Začiatok sústredenia@(Zaciatok != default ? $" - {DniVTyzdni.GetDen((int) Zaciatok.Value.DayOfWeek)}" : "")</FieldLabel>
+    <DateEdit TValue="DateTime?" @bind-Date="@Zaciatok" />
 </Field>
 
 <Field>
@@ -77,7 +68,8 @@
         set { }
     }
 
-    private int zaciatok;
+
+    private DateTime? Zaciatok { get; set; }
 
     private string _zaciatokDna;
 
@@ -112,7 +104,7 @@
         {
             nazovRozvrhu = Rozvrh.Nazov;
             dni = Rozvrh.PocetDni;
-            zaciatok = Rozvrh.Zaciatok;
+            Zaciatok = Rozvrh.ZaciatokRozvrhu;
             _zaciatokDna = Rozvrh.ZaciatokDna.ToString(@"hh\:mm");
             _koniecDna = Rozvrh.KoniecDna.ToString(@"hh\:mm");
             StateHasChanged();
@@ -136,7 +128,7 @@
         if (errors == null)
         {
             Rozvrh.Nazov = nazovRozvrhu;
-            Rozvrh.Zaciatok = zaciatok;
+            Rozvrh.ZaciatokRozvrhu = Zaciatok;
             Rozvrh.NastavPocetDni(dni);
             Rozvrh.ZaciatokDna = ParseTime(_zaciatokDna);
             Rozvrh.KoniecDna = ParseTime(_koniecDna);

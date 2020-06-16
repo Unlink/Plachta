@@ -15,13 +15,13 @@
     </Field>
 
     <Field>
-        <FieldLabel>Trvanie</FieldLabel>
+        <FieldLabel>Trvanie <span class="small">(v minutach)</span></FieldLabel>
         <Validation Validator="@ValidationRule.IsNotEmpty">
-            <TextEdit @bind-Text="@trvanieAktivity" type="time">
+            <NumericEdit TValue="int" Value="@trvanieAktivity">
                 <Feedback>
                     <ValidationError />
                 </Feedback>
-            </TextEdit>
+            </NumericEdit>
         </Validation>
     </Field>
 </Validations>
@@ -47,7 +47,7 @@
         {
             _sablona = value;
             nazov = _sablona?.Nazov;
-            trvanieAktivity = Sablona.Trvanie.ToString(@"hh\:mm");
+            trvanieAktivity = (int) Sablona.Trvanie.TotalMinutes;
         }
     }
 
@@ -57,7 +57,7 @@
 
     private string nazov;
 
-    private string trvanieAktivity;
+    private int trvanieAktivity;
 
 
     protected override void OnAfterRender(bool firstRender)
@@ -74,7 +74,7 @@
         if (validations.ValidateAll())
         {
             Sablona.Nazov = nazov;
-            Sablona.Trvanie = Converters.FromTimeStr(trvanieAktivity);
+            Sablona.Trvanie = TimeSpan.FromMinutes(trvanieAktivity);
             Sablona.Veduci.Clear();
             Sablona.Veduci.AddRange(assignForm.GetResult());
 

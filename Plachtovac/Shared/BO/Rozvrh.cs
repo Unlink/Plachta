@@ -8,17 +8,19 @@ namespace Plachtovac.Shared.BO
 {
     public class Rozvrh
     {
-        private int _zaciatok;
+        private DateTime? _zaciatokRozvrhu;
 
-        public int Zaciatok
+        public DateTime? ZaciatokRozvrhu
         {
-            get => _zaciatok;
+            get => _zaciatokRozvrhu;
             set
             {
-                _zaciatok = value;
+                _zaciatokRozvrhu = value;
                 RozvrhChanged?.Invoke(this, EventArgs.Empty);
             }
         }
+
+        public int Zaciatok => (int) (_zaciatokRozvrhu?.DayOfWeek ?? 0);
 
         public string ZaciatokStr => DniVTyzdni.GetDen(Zaciatok);
 
