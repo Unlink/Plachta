@@ -1,5 +1,9 @@
 ﻿@page {
-    size: A4 landscape;
+    size: A4 portrait;
+}
+
+body {
+    min-width: 209mm!important;
 }
 
 .content {
@@ -14,13 +18,22 @@
 }
 
 .portrait {
-    width: 296mm;
-    height: 209mm;
+    height: 296mm;
+    width: 209mm;
+    page-break-after: always;
+    padding: 10mm;
 }
 
-.portrait > div {
-    transform-origin: 0 0;
-    width: 209mm;
+.landscape {
     height: 296mm;
-    transform: rotate(270deg) translate(-209mm, 0);
+    width: 209mm;
+    page-break-inside: avoid;
 }
+
+    .landscape > div {
+        padding: 5mm;
+        transform-origin: 0 0;
+        height: 209mm;
+        width: 296mm;
+        transform: rotate(90deg) translate(5mm, -214mm);
+    }
