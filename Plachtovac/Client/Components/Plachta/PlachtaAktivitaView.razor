@@ -11,7 +11,7 @@
       @ondragstart="e => HandleDragStart(e)"
       @ondragend="e => HandleDragEnd(e)"
       style="left: @Pozicia.ToString("N", CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N", CultureInfo.InvariantCulture)%">
-    @((MarkupString) Aktivita.Design)
+    <div>@((MarkupString) Aktivita.Design)</div>
     @if (Aktivita.ZobrazCas)
     {
         <span class="aktivitaTime">@Aktivita.Time.ToString(@"hh\:mm")</span>

@@ -41,6 +41,8 @@ namespace Plachtovac.Shared.BO
         public ElementSize CustomGraphicsCanvasSize { get; set; }
         public string Program { get; set; }
 
+        public string Farba { get; set; }
+
         public event EventHandler RozvrhChanged; 
 
         public void PresunAktivitu(Aktivita aktivita, Den den, TimeSpan timeSpan)

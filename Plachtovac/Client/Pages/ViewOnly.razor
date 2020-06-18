@@ -1,4 +1,5 @@
 ﻿@page "/view"
+@using System.Globalization
 @using Plachtovac.Client.Services
 @using Plachtovac.Shared.BO
 @using Plachtovac.Client.Components.Plachta
@@ -55,7 +56,13 @@
                             <div class="row h-100">
                                 <div class="col col-horizontal">
                                     <h2>Vedúci družín:</h2>
-                                    todo
+                                    @foreach (var druzinka in Rozvrh.Veduci.GroupBy(v => v.Druzinka))
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(druzinka.Key))
+                                        {
+                                            @druzinka.Key<text>:</text> @string.Join(", ", druzinka.Select(v => v.Prezyvka))<br />
+                                        }
+                                    }
                                 </div>
                                 <div class="col col-horizontal">
                                     <h2>Zoznam krúžkov</h2>
@@ -105,13 +112,42 @@
     </div>
 }
 
+<style>
+    .aktivita.veduci-aktivity > div::before, .den.veduci-dna .title {
+        background: rgba(@RGBAVal);
+    }
+</style>
+
 @code {
     public Rozvrh Rozvrh { get; private set; }
+    public string RGBAVal { get; set; } = "100,100,100,0.2";
 
     protected override void OnInitialized()
     {
         Rozvrh = PlachtaService.AktualnyRozvrh;
         if (Rozvrh == null) NavigationManager.NavigateTo("/");
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var farba = Rozvrh?.Farba ?? "#000000";
+
+                var r = int.Parse(farba.Substring(1, 2), NumberStyles.HexNumber);
+                var g = int.Parse(farba.Substring(3, 2), NumberStyles.HexNumber);
+                var b = int.Parse(farba.Substring(5, 2), NumberStyles.HexNumber);
+
+                RGBAVal = $@"{r},{g},{b},0.2";
+                StateHasChanged();
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 
 }

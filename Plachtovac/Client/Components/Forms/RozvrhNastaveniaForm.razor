@@ -37,16 +37,20 @@
     <FieldLabel>Koniec dňa</FieldLabel>
     <TextEdit @bind-Text="@KoniecDna" type="time" />
 </Field>
-
+<Field>
+    <FieldLabel>Farba</FieldLabel>
+    <input type="color" @bind="@Farba" />
+</Field>
 <Field>
     <FieldLabel>Program</FieldLabel>
     <MemoEdit @bind-Text="@Program" Placeholder="8:00 nejaky program&#10;10:00 iny&#10;15:00 posledny" />
 </Field>
 
-@if (errors != null) {
-<Alert Color="Color.Danger">
-    @errors
-</Alert>
+@if (errors != null)
+{
+    <Alert Color="Color.Danger">
+        @errors
+    </Alert>
 }
 
 
@@ -68,6 +72,7 @@
     private int dni;
 
     public string Program { get; set; }
+    public string Farba { get; set; }
 
     private string dniStr
     {
@@ -114,7 +119,8 @@
             Zaciatok = Rozvrh.ZaciatokRozvrhu;
             _zaciatokDna = Rozvrh.ZaciatokDna.ToString(@"hh\:mm");
             _koniecDna = Rozvrh.KoniecDna.ToString(@"hh\:mm");
-            Program = Rozvrh.Program ;
+            Program = Rozvrh.Program;
+            Farba = Rozvrh.Farba;
             StateHasChanged();
         }
     }
@@ -141,6 +147,7 @@
             Rozvrh.ZaciatokDna = ParseTime(_zaciatokDna);
             Rozvrh.KoniecDna = ParseTime(_koniecDna);
             Rozvrh.Program = Program;
+            Rozvrh.Farba = Farba;
             BlazoredModal.Close(ModalResult.Ok(Rozvrh));
         }
     }
