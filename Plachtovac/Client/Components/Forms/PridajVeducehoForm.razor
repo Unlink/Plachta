@@ -131,6 +131,8 @@
     private void PridajUlohu(string uloha)
     {
         if (uloha == null) uloha = ulohaInput;
+        if (string.IsNullOrWhiteSpace(uloha)) return;
+        
         ulohy.Add(uloha);
         UlohaTextChanged("");
     }

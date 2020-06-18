@@ -104,14 +104,26 @@ namespace Plachtovac.Client.Components.Plachta
                 var imgUrl = modal.Result.Result.Data.ToString();
                 var imgData = await JSRuntime.InvokeAsync<ElementSize>("FabricJSBindings.getImageSize",
                     imgUrl);
+
+                var scale = 1.0;
+                if (imgData.Width > CurrentCanvasSize.Width)
+                {
+                    scale = CurrentCanvasSize.Width / imgData.Width;
+                }
+
+                if (imgData.Height * scale > CurrentCanvasSize.Height)
+                {
+                    scale = CurrentCanvasSize.Height / imgData.Height;
+                }
+
                 var imageItem = new ObrazokGraphicsItem
                 {
                     Height = imgData.Height,
                     Left = 10,
                     Top = 10,
                     Width = imgData.Width,
-                    ScaleX = 1,
-                    ScaleY = 1,
+                    ScaleX = scale,
+                    ScaleY = scale,
                     Image = imgUrl
                 };
                 await InsertItem(imageItem);

@@ -47,6 +47,19 @@ namespace Plachtovac.Shared.BO
         {
             if (!den.Koliduje(timeSpan, aktivita)) { 
                 OdstranAktivitu(aktivita);
+
+                var zaokrulovaciePointy = new[] {60, 30, 15, 5, 1,0};
+
+                foreach (var roundTime in zaokrulovaciePointy)
+                {
+                    var time = timeSpan.RoundToNearest(TimeSpan.FromMinutes(roundTime));
+                    if (time >= ZaciatokDna && (time + aktivita.Trvanie) <= KoniecDna && !den.Koliduje(time, aktivita))
+                    {
+                        aktivita.Time = time;
+                        den.PridajAktivitu(aktivita);
+                        return;
+                    }
+                }
                 aktivita.Time = timeSpan;
                 den.PridajAktivitu(aktivita);
             }
