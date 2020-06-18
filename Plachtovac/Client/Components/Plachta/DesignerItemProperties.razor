@@ -52,7 +52,6 @@
             if (newValue > 0)
             {
                 zv.PocetRiadkov = newValue;
-                zv.NastavZoznamVeducich(parent.Sablona.Veduci);
                 parent.SelectedGraphicsItemOnPropertyChanged(this, new PropertyChangedEventArgs(nameof(ZoznamVeducichTextGraphicsItem.Text)));
             }
         }
