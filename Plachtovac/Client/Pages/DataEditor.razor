@@ -1,0 +1,180 @@
+﻿@page "/dataeditor"
+@using Plachtovac.Shared.BO
+@using Plachtovac.Client.Services
+@using Plachtovac.Client.VM
+@using Plachtovac.Client.Helpers
+@using Blazorise
+@using Plachtovac.Client.Components.Forms
+@using Plachtovac.Client.Components.Plachta
+
+@implements IDisposable
+@inject PlachtaService PlachtaService
+@inject NavigationManager NavigationManager
+@inject IModalService Modal
+
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    Táto stránka slúži na hromadnú editáciu vedúcich. Zmenené údaje sa ukladajú automaticky
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<nav>
+    <div class="nav nav-tabs" role="tablist">
+        @foreach (var typ in TypyAktivit)
+        {
+            <a class="nav-item nav-link" id="nav-@Converters.CreateIdentifier(typ.Key)-tab" data-toggle="tab" href="#nav-@Converters.CreateIdentifier(typ.Key)" role="tab">@typ.Key</a>
+        }
+    </div>
+</nav>
+<div class="tab-content">
+    @foreach (var typ in TypyAktivit)
+    {
+        <div class="tab-pane fade" id="nav-@Converters.CreateIdentifier(typ.Key)" role="tabpanel">
+            <table class="table table-striped table-bordered table-hover">
+                @foreach (var sablona in typ.Value.Sablony)
+                {
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col" colspan="2">@sablona.Nazov</th>
+                            <th scope="col" width="220"><Button Color="Color.Primary" @onclick="() => PridajVeducehoAktivity(sablona.Sablona)">Pridaj Vedúceho</Button></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var veduci in sablona.Sablona.Veduci)
+                        {
+                            <tr>
+                                <td>@veduci.Veduci.Prezyvka</td>
+                                <td><MemoEdit Rows="1" @bind-Text="@veduci.Popis" /></td>
+                                <td><Button Color="Color.Danger" @onclick="() => ZmazVeduceho(sablona.Sablona, veduci.Veduci)">Odstráň</Button></td>
+                            </tr>
+                        }
+                    </tbody>
+                }
+
+                @foreach (var aktivita in typ.Value.Aktivity)
+                {
+                    if (aktivita.Aktivita.Veduci != null)
+                    {
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col" colspan="2">@aktivita.Datum - @aktivita.Nazov</th>
+                                <th scope="col" width="220"><Button Color="Color.Primary" @onclick="() => PridajVeducehoAktivity(aktivita.Aktivita)">Pridaj Vedúceho</Button></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var veduci in aktivita.Aktivita.Veduci)
+                            {
+                                <tr>
+                                    <td>@veduci.Veduci.Prezyvka</td>
+                                    <td><MemoEdit Rows="1" @bind-Text="@veduci.Popis" /></td>
+                                    <td><Button Color="Color.Danger" @onclick="() => ZmazVeduceho(aktivita.Aktivita, veduci.Veduci)">Odstráň</Button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    }
+                }
+            </table>
+        </div>
+    }
+</div>
+
+
+@code {
+
+    public Rozvrh Rozvrh { get; private set; }
+
+    public Dictionary<string, AktivitaTypVM> TypyAktivit { get; set; } = new Dictionary<string, AktivitaTypVM>();
+
+    protected override void OnInitialized()
+    {
+        Rozvrh = PlachtaService.AktualnyRozvrh;
+        if (Rozvrh == null) NavigationManager.NavigateTo("/");
+        PlachtaService.RozvrhChanged += PlachtaServiceOnRozvrhChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            foreach (var aktivita in Rozvrh.Dni.SelectMany(d => d.Aktivity.Select(a => new { Den = d, Aktivita = a })))
+            {
+                var typ = aktivita.Aktivita.Sablona.Typ;
+                if (string.IsNullOrWhiteSpace(typ))
+                {
+                    typ = "Bez kategórie";
+                }
+
+                if (!TypyAktivit.ContainsKey(typ))
+                {
+                    TypyAktivit.Add(typ, new AktivitaTypVM(typ));
+                }
+                TypyAktivit[typ].Aktivity.Add(
+                    new AktivitaVM(Rozvrh.ZaciatokRozvrhu.Value.Date + TimeSpan.FromDays(aktivita.Den.Poradie) + aktivita.Aktivita.Time, aktivita.Aktivita));
+            }
+
+            foreach (var typAktivity in TypyAktivit.Values)
+            {
+                typAktivity.Sablony.AddRange(
+                    typAktivity.Aktivity
+                        .GroupBy(a => a.Aktivita.Sablona)
+                        .Select(g => g.Key)
+                        .Where(s => s.Veduci.Count > 0)
+                        .Select(s => new SablonaVM(s)));
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void PlachtaServiceOnRozvrhChanged(object sender, Rozvrh e)
+    {
+        StateHasChanged();
+    }
+
+
+    public void Dispose()
+    {
+        PlachtaService.RozvrhChanged -= PlachtaServiceOnRozvrhChanged;
+    }
+
+    private async Task PridajVeducehoAktivity(IAktivita aktivita)
+    {
+        var dostupnyVeduci = Rozvrh.Veduci.Where(v => aktivita.Veduci.All(av => av.Veduci != v)).ToList();
+
+        if (dostupnyVeduci.Count == 0)
+        {
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), "Žiaden dostupný vedúci");
+            Modal.Show<YesNoModal>($"Priradenie vedúceho", parameters);
+        }
+        else
+        {
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(VeberVeducehoForm.ZoznamVeducich), dostupnyVeduci);
+            var modal = Modal.Show<VeberVeducehoForm>($"Priradenie vedúceho k {aktivita.Nazov}", parameters);
+            var result = await modal.Result;
+            if (!result.Cancelled)
+            {
+                var veduci = new List<AktivitaVeduci>(aktivita.Veduci);
+                veduci.Add(new AktivitaVeduci{Veduci = (Veduci) result.Data, Popis = ""});
+                aktivita.Veduci = veduci;
+            }
+        }
+    }
+
+    private async Task ZmazVeduceho(IAktivita aktivita, Veduci veduci)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(YesNoModal.Message), "Odstrániť vedúceho?");
+        var modal = Modal.Show<YesNoModal>($"Skutočne chcete odstrániť vedúceho {veduci.Prezyvka}?", parameters);
+        var result = await modal.Result;
+        if (!result.Cancelled)
+        {
+            var novyVeduci = new List<AktivitaVeduci>(aktivita.Veduci.Where(v => v.Veduci!=veduci));
+            aktivita.Veduci = novyVeduci;
+        }
+    }
+
+}

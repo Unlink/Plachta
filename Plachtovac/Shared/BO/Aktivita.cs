@@ -8,7 +8,7 @@ using Plachtovac.Shared.BO.GraphicsBlocks;
 
 namespace Plachtovac.Shared.BO
 {
-    public class Aktivita : INotifyPropertyChanged
+    public class Aktivita : INotifyPropertyChanged, IAktivita
     {
         private TimeSpan _time;
         private AktivitaSablona _sablona;
@@ -67,38 +67,7 @@ namespace Plachtovac.Shared.BO
                 if (Veduci == null) return Sablona.Design;
                 if (_design != null) return _design;
 
-                var zoznamVeducich = Sablona.AktivitaItems.Select(i => i as ZoznamVeducichTextGraphicsItem)
-                    .Where(i => i != null);
-                try
-                {
-                    var doc = new XmlDocument();
-                    doc.LoadXml(Sablona.Design);
-                    var root = doc.DocumentElement;
-                    foreach (var item in zoznamVeducich)
-                    {
-                        var riadky = item.VygenerujZoznamVeducich(Veduci);
-                        foreach (var node in root.ChildNodes)
-                        {
-                            if (node is XmlElement el && el.Name == "g" && el.Attributes.GetNamedItem("id")?.Value == item.Id)
-                            {
-                                var cnt = 0;
-                                var textElements = el.GetElementsByTagName("tspan");
-                                foreach (var f in textElements)
-                                {
-                                    var l = (XmlElement)f;
-                                    l.InnerText = riadky[cnt++];
-                                }
-                            }
-                        }
-                    }
-
-                    _design = doc.InnerXml;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine(ex);
-                }
-
+                _design = Sablona.PrerenderujDesign(_veduci);
                 return _design;
             }
         }

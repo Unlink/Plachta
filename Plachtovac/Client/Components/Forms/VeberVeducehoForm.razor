@@ -1,0 +1,38 @@
+﻿@using Blazorise
+@using Plachtovac.Shared.BO
+
+
+<Field>
+    <FieldLabel>Vedúci</FieldLabel>
+    <Select @bind-SelectedValue="_veduci">
+        @for (var i = 0; i < ZoznamVeducich.Count; i++)
+        {
+            var meno = ZoznamVeducich[i].Prezyvka;
+            <SelectItem Value="@i">@meno</SelectItem>
+        }
+    </Select>
+
+</Field>
+
+<button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
+<button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+@code {
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public List<Veduci> ZoznamVeducich { get; set; } = new List<Veduci>();
+
+    private int _veduci = 0;
+
+    void SubmitForm()
+    {
+        BlazoredModal.Close(ModalResult.Ok(ZoznamVeducich[_veduci]));
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
+    }
+
+}
