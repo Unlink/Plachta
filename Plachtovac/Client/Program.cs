@@ -9,6 +9,7 @@ using Blazorise.Icons.FontAwesome;
 using Blazorise.Icons.Material;
 using Blazorise.Material;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Plachtovac.Client.Services;
 
@@ -29,6 +30,11 @@ namespace Plachtovac.Client
                 .AddBlazoredModal()
                 .AddBlazoredLocalStorage()
                 .AddFileReaderService(options => options.UseWasmSharedBuffer = true);
+
+            builder.Services.AddOidcAuthentication(options =>
+            {
+                builder.Configuration.Bind("Local", options.ProviderOptions);
+            });
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
