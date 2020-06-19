@@ -20,7 +20,7 @@
         <button class="dropdown-item" @onclick="NewRozvrh">Nový</button>
         <button class="dropdown-item btn-fileOpen">
             Otvoriť
-            <FileEdit Changed="OpenRozvrh" Filter="text/json" />
+            <FileEdit Changed="OpenRozvrh" Written="OnWritten" Progressed="OnProgressed" MaxMessageSize="524288" Filter="text/json" />
         </button>
         @if (PlachtaService.AktualnyRozvrh != null)
         {
@@ -237,6 +237,17 @@
     {
         var json = PlachtaService.ExportRozvrh();
         await FileUtil.SaveAs(JSRuntime, $"{PlachtaService.AktualnyRozvrh.Nazov}.json", json);
+    }
+
+
+    void OnWritten(FileWrittenEventArgs e)
+    {
+        Console.WriteLine($"File: {e.File.Name} Position: {e.Position}");
+    }
+
+    void OnProgressed(FileProgressedEventArgs e)
+    {
+        Console.WriteLine($"File: {e.File.Name} Progress: {e.Percentage}");
     }
 
 }
