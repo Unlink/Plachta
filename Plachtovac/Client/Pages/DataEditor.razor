@@ -91,7 +91,7 @@
     protected override void OnInitialized()
     {
         Rozvrh = PlachtaService.AktualnyRozvrh;
-        if (Rozvrh == null) NavigationManager.NavigateTo("/");
+        if (Rozvrh == null) NavigationManager.NavigateTo("./");
         PlachtaService.RozvrhChanged += PlachtaServiceOnRozvrhChanged;
     }
 

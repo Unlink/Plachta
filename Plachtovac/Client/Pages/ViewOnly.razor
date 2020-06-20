@@ -200,7 +200,7 @@ public Rozvrh Rozvrh { get; private set; }
     protected override void OnInitialized()
     {
         Rozvrh = PlachtaService.AktualnyRozvrh;
-        if (Rozvrh == null) NavigationManager.NavigateTo("/");
+        if (Rozvrh == null) NavigationManager.NavigateTo("./");
     }
 
     protected override void OnAfterRender(bool firstRender)
