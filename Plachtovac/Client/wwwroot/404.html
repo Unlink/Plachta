@@ -1,6 +1,8 @@
 ﻿<script>
     const fullPath = window.location.pathname.split("/");
     const path = fullPath.slice(2).join("/");
-    localStorage.setItem('path', path+window.location.search);
+    localStorage.setItem('path', path+window.location.search+window.location.hash);
+    localStorage.setItem('path_backup', path+window.location.search+window.location.hash);
+     localStorage.setItem('path_fullUrl', window.location);
     window.location.href = fullPath.slice(0, 2).join("/");
 </script>
