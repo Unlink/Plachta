@@ -35,8 +35,8 @@ namespace Plachtovac.Client
             builder.Services.AddOidcAuthentication(options =>
             {
                 options.ProviderOptions.Authority = "https://accounts.google.com/";
-                options.ProviderOptions.RedirectUri = "https://localhost:5001/authentication/login-callback";
-                options.ProviderOptions.PostLogoutRedirectUri = "https://localhost:5001/authentication/logout-callback";
+                options.ProviderOptions.RedirectUri = builder.HostEnvironment.BaseAddress+"authentication/login-callback";
+                options.ProviderOptions.PostLogoutRedirectUri = builder.HostEnvironment.BaseAddress+"authentication/logout-callback";
                 options.ProviderOptions.ClientId = "259222768075-ke2p7ppur3q34kfed28qnu0puklisa55.apps.googleusercontent.com";
                 options.ProviderOptions.DefaultScopes.Add("https://www.googleapis.com/auth/drive.file");
                 //options.ProviderOptions.DefaultScopes.Add("https://www.googleapis.com/auth/drive.appdata");
