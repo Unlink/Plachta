@@ -24,7 +24,10 @@
         {
             var path = await LocalStorage.GetItemAsync<string>("path");
             await LocalStorage.RemoveItemAsync("path");
-            NavigationManager.NavigateTo(path);
+            if (path.StartsWith(""))
+            {
+                NavigationManager.NavigateTo(path);
+            }
         }
     }
 
