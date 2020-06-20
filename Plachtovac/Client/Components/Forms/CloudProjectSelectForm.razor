@@ -1,0 +1,38 @@
+﻿@using Blazorise
+@using Plachtovac.Shared.BO
+
+
+<Field>
+    <FieldLabel>Rozvrh</FieldLabel>
+    <Select @bind-SelectedValue="_selectedRozvrh">
+        @for (var i = 0; i < Rozvrhy.Count; i++)
+        {
+            var meno = Rozvrhy[i];
+            <SelectItem Value="@i">@meno</SelectItem>
+        }
+    </Select>
+
+</Field>
+
+<button @onclick="SubmitForm" class="btn btn-primary">Submit</button>
+<button @onclick="Cancel" class="btn btn-secondary">Cancel</button>
+@code {
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter]
+    public List<string> Rozvrhy { get; set; } = new List<string>();
+
+    private int _selectedRozvrh = 0;
+
+    void SubmitForm()
+    {
+        BlazoredModal.Close(ModalResult.Ok(Rozvrhy[_selectedRozvrh]));
+    }
+
+    void Cancel()
+    {
+        BlazoredModal.Cancel();
+    }
+
+}

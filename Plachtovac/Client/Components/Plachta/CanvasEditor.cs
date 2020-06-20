@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +24,13 @@ namespace Plachtovac.Client.Components.Plachta
         public IJSRuntime JSRuntime { get; set; }
 
         [Inject]
-        private IModalService ModalService { get; set; }
+        protected IModalService ModalService { get; set; }
+
+        [Inject]
+        private IFileReaderService FileReaderService { get; set; }
+
+        [Inject]
+        private GoogleDriveStorage CloudService { get; set; }
 
         [Parameter]
         public ElementReference CanvasElement { get; set; }
@@ -62,34 +69,49 @@ namespace Plachtovac.Client.Components.Plachta
             await InsertItem(textAktivita);
         }
 
-        public virtual async Task InsertFile(Blazorise.IFileEntry file, int width = 0, int height = 0)
+        public virtual async Task InsertFile(ElementReference inputTypeFileElement, int width = 0, int height = 0)
         {
-            using (var stream = new MemoryStream())
+            foreach (var file in await FileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
             {
-                await file.WriteToStreamAsync(stream);
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                //using (MemoryStream memoryStream = await file.CreateMemoryStreamAsync(80 * 1024))
+                //{
+                //    Convert.ToBase64String(memoryStream.ToArray());
+                //    Console.WriteLine($"Done reading file - {memoryStream.Length} bytes in {stopwatch.ElapsedMilliseconds}ms.");
+                //}
 
-                var bytes = stream.ToArray();
-                var base64 = Convert.ToBase64String(bytes);
-                var type = file.Type;
 
-                Console.WriteLine("Conversion started");
-                var imgData = await JSRuntime.InvokeAsync<ImgConversionResult>("FabricJSBindings.resizeImage",
-                    $"data:{type};base64,{base64}", width, height);
-                Console.WriteLine("Conversion done");
-                Console.WriteLine(imgData.Data);
+                var fileInfo = await file.ReadFileInfoAsync();
+                Console.WriteLine($"{nameof(IFileInfo)}.{nameof(fileInfo.Name)}: {fileInfo.Name}");
+                Console.WriteLine($"{nameof(IFileInfo)}.{nameof(fileInfo.Size)}: {fileInfo.Size}");
+                Console.WriteLine($"{nameof(IFileInfo)}.{nameof(fileInfo.Type)}: {fileInfo.Type}");
+                Console.WriteLine($"{nameof(IFileInfo)}.{nameof(fileInfo.LastModifiedDate)}: {fileInfo.LastModifiedDate?.ToString() ?? "(N/A)"}");
 
-                var imageItem = new ObrazokGraphicsItem
+                var bytes = new byte[fileInfo.Size];
+                var filePos = 0;
+                using (var fs = await file.OpenReadAsync())
                 {
-                    Height = imgData.Height,
-                    Left = 10,
-                    Top = 10,
-                    Width = imgData.Width,
-                    ScaleX = 1,
-                    ScaleY = 1,
-                    Image = imgData.Data
-                };
+                    var buffer = new byte[80*1024];
+                    int count;
+                    var lastAnnounce = 0m;
+                    while ((count = await fs.ReadAsync(buffer, 0, buffer.Length)) != 0)
+                    {
+                        Buffer.BlockCopy(buffer, 0, bytes, filePos, count);
+                        filePos += count;
+                        var progress = ((decimal)fs.Position * 100) / fs.Length;
+                        if (progress > (lastAnnounce + 10))
+                        {
+                            Console.WriteLine($"Read {count} bytes ({progress:00}%). {fs.Position} / {fs.Length}");
+                        }
+                    }
+                    Console.WriteLine($"Done reading file {fileInfo.Name} - {fs.Length} bytes in {stopwatch.ElapsedMilliseconds}ms.");
+                }
 
-                await InsertItem(imageItem);
+                var imgUrl = await CloudService.StoreImage(fileInfo.Name, fileInfo.Type, bytes);
+                Console.WriteLine($"Done uploading to gdrive {imgUrl}");
+
+                InsertExternalImage(imgUrl);
             }
         }
 
@@ -102,32 +124,37 @@ namespace Plachtovac.Client.Components.Plachta
             if (!(await modal.Result).Cancelled)
             {
                 var imgUrl = modal.Result.Result.Data.ToString();
-                var imgData = await JSRuntime.InvokeAsync<ElementSize>("FabricJSBindings.getImageSize",
-                    imgUrl);
-
-                var scale = 1.0;
-                if (imgData.Width > CurrentCanvasSize.Width)
-                {
-                    scale = CurrentCanvasSize.Width / imgData.Width;
-                }
-
-                if (imgData.Height * scale > CurrentCanvasSize.Height)
-                {
-                    scale = CurrentCanvasSize.Height / imgData.Height;
-                }
-
-                var imageItem = new ObrazokGraphicsItem
-                {
-                    Height = imgData.Height,
-                    Left = 10,
-                    Top = 10,
-                    Width = imgData.Width,
-                    ScaleX = scale,
-                    ScaleY = scale,
-                    Image = imgUrl
-                };
-                await InsertItem(imageItem);
+                InsertExternalImage(imgUrl);
             }
+        }
+
+        private async void InsertExternalImage(string imgUrl)
+        {
+            var imgData = await JSRuntime.InvokeAsync<ElementSize>("FabricJSBindings.getImageSize",
+                imgUrl);
+
+            var scale = 1.0;
+            if (imgData.Width > CurrentCanvasSize.Width)
+            {
+                scale = CurrentCanvasSize.Width / imgData.Width;
+            }
+
+            if (imgData.Height * scale > CurrentCanvasSize.Height)
+            {
+                scale = CurrentCanvasSize.Height / imgData.Height;
+            }
+
+            var imageItem = new ObrazokGraphicsItem
+            {
+                Height = imgData.Height,
+                Left = 10,
+                Top = 10,
+                Width = imgData.Width,
+                ScaleX = scale,
+                ScaleY = scale,
+                Image = imgUrl
+            };
+            await InsertItem(imageItem);
         }
 
         protected virtual async Task<JSInteropBOWrapper<GraphicsItem>> InsertItem(GraphicsItem item)

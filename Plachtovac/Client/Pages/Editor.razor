@@ -7,10 +7,13 @@
 @inject PlachtaService PlachtaService
 @inject NavigationManager NavigationManager
 
-<PlachtaView Editable="true" Rozvrh="Rozvrh"></PlachtaView>
+@if (PlachtaService.AktualnyRozvrh != null)
+{
+    <PlachtaView Editable="true" Rozvrh="Rozvrh"></PlachtaView>
+}
 
 @code {
-    public Rozvrh Rozvrh { get; private set; }
+public Rozvrh Rozvrh { get; private set; }
 
     protected override void OnInitialized()
     {
@@ -30,4 +33,4 @@
         PlachtaService.RozvrhChanged -= PlachtaServiceOnRozvrhChanged;
     }
 
-}
+    }

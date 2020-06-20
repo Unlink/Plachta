@@ -19,66 +19,68 @@
     </button>
 </div>
 
-<nav>
-    <div class="nav nav-tabs" role="tablist">
+@if (PlachtaService.AktualnyRozvrh != null)
+{
+    <nav>
+        <div class="nav nav-tabs" role="tablist">
+            @foreach (var typ in TypyAktivit)
+            {
+                <a class="nav-item nav-link" id="nav-@Converters.CreateIdentifier(typ.Key)-tab" data-toggle="tab" href="#nav-@Converters.CreateIdentifier(typ.Key)" role="tab">@typ.Key</a>
+            }
+        </div>
+    </nav>
+    <div class="tab-content">
         @foreach (var typ in TypyAktivit)
         {
-            <a class="nav-item nav-link" id="nav-@Converters.CreateIdentifier(typ.Key)-tab" data-toggle="tab" href="#nav-@Converters.CreateIdentifier(typ.Key)" role="tab">@typ.Key</a>
-        }
-    </div>
-</nav>
-<div class="tab-content">
-    @foreach (var typ in TypyAktivit)
-    {
-        <div class="tab-pane fade" id="nav-@Converters.CreateIdentifier(typ.Key)" role="tabpanel">
-            <table class="table table-striped table-bordered table-hover">
-                @foreach (var sablona in typ.Value.Sablony)
-                {
-                    <thead class="thead-dark">
+            <div class="tab-pane fade" id="nav-@Converters.CreateIdentifier(typ.Key)" role="tabpanel">
+                <table class="table table-striped table-bordered table-hover">
+                    @foreach (var sablona in typ.Value.Sablony)
+                    {
+                        <thead class="thead-dark">
                         <tr>
                             <th scope="col" colspan="2">@sablona.Nazov</th>
                             <th scope="col" width="220"><Button Color="Color.Primary" @onclick="() => PridajVeducehoAktivity(sablona.Sablona)">Pridaj Vedúceho</Button></th>
                         </tr>
-                    </thead>
-                    <tbody>
+                        </thead>
+                        <tbody>
                         @foreach (var veduci in sablona.Sablona.Veduci)
                         {
                             <tr>
                                 <td>@veduci.Veduci.Prezyvka</td>
-                                <td><MemoEdit Rows="1" @bind-Text="@veduci.Popis" /></td>
+                                <td><MemoEdit Rows="1" @bind-Text="@veduci.Popis"/></td>
                                 <td><Button Color="Color.Danger" @onclick="() => ZmazVeduceho(sablona.Sablona, veduci.Veduci)">Odstráň</Button></td>
                             </tr>
                         }
-                    </tbody>
-                }
+                        </tbody>
+                    }
 
-                @foreach (var aktivita in typ.Value.Aktivity)
-                {
-                    if (aktivita.Aktivita.Veduci != null)
+                    @foreach (var aktivita in typ.Value.Aktivity)
                     {
-                        <thead class="thead-dark">
+                        if (aktivita.Aktivita.Veduci != null)
+                        {
+                            <thead class="thead-dark">
                             <tr>
                                 <th scope="col" colspan="2">@aktivita.Datum - @aktivita.Nazov</th>
                                 <th scope="col" width="220"><Button Color="Color.Primary" @onclick="() => PridajVeducehoAktivity(aktivita.Aktivita)">Pridaj Vedúceho</Button></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                            </thead>
+                            <tbody>
                             @foreach (var veduci in aktivita.Aktivita.Veduci)
                             {
                                 <tr>
                                     <td>@veduci.Veduci.Prezyvka</td>
-                                    <td><MemoEdit Rows="1" @bind-Text="@veduci.Popis" /></td>
+                                    <td><MemoEdit Rows="1" @bind-Text="@veduci.Popis"/></td>
                                     <td><Button Color="Color.Danger" @onclick="() => ZmazVeduceho(aktivita.Aktivita, veduci.Veduci)">Odstráň</Button></td>
                                 </tr>
                             }
-                        </tbody>
+                            </tbody>
+                        }
                     }
-                }
-            </table>
-        </div>
-    }
-</div>
-
+                </table>
+            </div>
+        }
+    </div>
+}
 
 @code {
 
