@@ -8,184 +8,193 @@
 @inject PlachtaService PlachtaService
 @inject NavigationManager NavigationManager
 
-@foreach (var veduci in Rozvrh.Veduci)
+@if (PlachtaService.AktualnyRozvrh != null)
 {
-    <div class="portrait program-stretnutia">
-        <h1>@Rozvrh.Nazov: @Rozvrh.ZaciatokRozvrhu?.ToString("dd.MM") - @veduci.Prezyvka</h1>
+    @foreach (var veduci in Rozvrh.Veduci)
+    {
+        <div class="portrait program-stretnutia">
+            <h1>@Rozvrh.Nazov: @Rozvrh.ZaciatokRozvrhu?.ToString("dd.MM") - @veduci.Prezyvka</h1>
 
-        <div class="border-top border-left border-black" style="padding: 0 20px;">
-            <div class="row">
-                <div class="col program-dna">
-                    <h2>Program dňa:</h2>
-                    @if (!string.IsNullOrWhiteSpace(Rozvrh.Program))
-                    {
-                        <table>
-                            @foreach (var row in Rozvrh.Program.Split("\n"))
-                            {
-                                var parts = row.Split(" ");
-                                var cas = parts.First();
-                                var program = string.Join(" ", parts.Skip(1));
-                                <span class="program-cas">@cas</span>
-                                @program
-                                <br/>
-                            }
-                        </table>
-                    }
-                </div>
-                <div class="col">
-                    <h2>Môj program</h2>
-                    @foreach (var den in Rozvrh.Dni)
-                    {
-                        foreach (var aktivita in den.Aktivity)
+            <div class="border-top border-left border-black" style="padding: 0 20px;">
+                <div class="row">
+                    <div class="col program-dna">
+                        <h2>Program dňa:</h2>
+                        @if (!string.IsNullOrWhiteSpace(Rozvrh.Program))
                         {
-                            if (aktivita.JeVeduci(veduci))
-                            {
-                                <span style="margin-right: 3px;">@(DniVTyzdni.GetDen((den.Poradie + PlachtaService.AktualnyRozvrh.Zaciatok) % 7))</span>
-                                <span style="margin-right: 3px;">@aktivita.Time.ToString("hh\\:mm"):</span>
-                                <span style="margin-right: 3px;">@aktivita.Nazov -</span>
-                                <span style="margin-right: 3px;">@aktivita.GetPopisVeduceho(veduci)</span>
-                                <br />
-                            }
-                        }
-                    }
-                </div>
-            </div>
-
-
-            <div class="row">
-                <div class="border-rb col-8">
-                    <div class="row">
-                        <div class="col col-6 border-0">
-                            <div class="row h-100">
-                                <div class="col col-horizontal">
-                                    <h2>Vedúci družín:</h2>
-                                    @foreach (var druzinka in Rozvrh.Veduci.GroupBy(v => v.Druzinka))
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(druzinka.Key))
-                                        {
-                                            @druzinka.Key<text>:</text> @string.Join(", ", druzinka.Select(v => v.Prezyvka))<br />
-                                        }
-                                    }
-                                </div>
-                                <div class="col col-horizontal">
-                                    <h2>Zoznam krúžkov</h2>
-                                    @{
-                                        var kruzkyAktivita = Rozvrh.SablonyAktivit.FirstOrDefault(k => k.Typ == "Krúžok");
-                                        if (kruzkyAktivita != null)
-                                        {
-                                            foreach (var kruzok in kruzkyAktivita.Veduci.GroupBy(v => v.Popis))
-                                            {
-                                                @string.Join(", ", kruzok.Select(v => v.Veduci.Prezyvka))<text>:</text> @kruzok.Key<br />
-                                            }
-                                        }
-                                    }
-                                </div>
-                                <div class="col col-horizontal">
-                                    <h2>čo si mám doniesť (okrem vecí na svoj program)</h2>
-                                    <ul>
-                                        <li>Čokoládu či koláč 😁</li>
-                                        <li>Notebook a/alebo gitaru, ak si to na chystačke sľúbil</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col col-6 border-right-0 photo">
-                            <img src="@veduci.Fotka" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <h2>Bonusy:</h2>
-                            @{
-                                var zoznamBonusov = Rozvrh.Veduci.SelectMany(v => v.Ulohy.Select(u => new { v.Prezyvka, u })).GroupBy(x => x.u);
-                                @foreach (var bonus in zoznamBonusov)
+                            <table>
+                                @foreach (var row in Rozvrh.Program.Split("\n"))
                                 {
-                                    @bonus.Key<text>:</text>
-                                    @string.Join(", ", bonus.Select(v => v.Prezyvka))<br />
+                                    var parts = row.Split(" ");
+                                    var cas = parts.First();
+                                    var program = string.Join(" ", parts.Skip(1));
+                                    <span class="program-cas">@cas</span>
+                                    @program
+                                    <br/>
+                                }
+                            </table>
+                        }
+                    </div>
+                    <div class="col">
+                        <h2>Môj program</h2>
+                        @foreach (var den in Rozvrh.Dni)
+                        {
+                            foreach (var aktivita in den.Aktivity)
+                            {
+                                if (aktivita.JeVeduci(veduci))
+                                {
+                                    <span style="margin-right: 3px;">@(DniVTyzdni.GetDen((den.Poradie + PlachtaService.AktualnyRozvrh.Zaciatok) % 7))</span>
+                                    <span style="margin-right: 3px;">@aktivita.Time.ToString("hh\\:mm"):</span>
+                                    <span style="margin-right: 3px;">@aktivita.Nazov -</span>
+                                    <span style="margin-right: 3px;">@aktivita.GetPopisVeduceho(veduci)</span>
+                                    <br/>
                                 }
                             }
-                        </div>
+                        }
                     </div>
                 </div>
-                <div class="border-rb col-4">
-                    <h2>Zoznam prednášok:</h2>
-                    @{
-                        var prednasky = Rozvrh.Dni
-                            .SelectMany(
-                                d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Prednáška")
-                                    .SelectMany((a, i) => a.Veduci.Select(a => new { Veduci = a, N = i })));
-                        foreach (var aktivitaVeduci in prednasky)
-                        {
-                            if (aktivitaVeduci.Veduci.Popis?.Length > 2)
+
+
+                <div class="row">
+                    <div class="border-rb col-8">
+                        <div class="row">
+                            <div class="col col-6 border-0">
+                                <div class="row h-100">
+                                    <div class="col col-horizontal">
+                                        <h2>Vedúci družín:</h2>
+                                        @foreach (var druzinka in Rozvrh.Veduci.GroupBy(v => v.Druzinka))
+                                        {
+                                            if (!string.IsNullOrWhiteSpace(druzinka.Key))
+                                            {
+                                                @druzinka.Key<text>:</text>
+                                                @string.Join(", ", druzinka.Select(v => v.Prezyvka))<br/>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="col col-horizontal">
+                                        <h2>Zoznam krúžkov</h2>
+                                        @{
+                                            var kruzkyAktivita = Rozvrh.SablonyAktivit.FirstOrDefault(k => k.Typ == "Krúžok");
+                                            if (kruzkyAktivita != null)
+                                            {
+                                                foreach (var kruzok in kruzkyAktivita.Veduci.GroupBy(v => v.Popis))
+                                                {
+                                                    @string.Join(", ", kruzok.Select(v => v.Veduci.Prezyvka))<text>:</text>
+                                                    @kruzok.Key<br/>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                    <div class="col col-horizontal">
+                                        <h2>čo si mám doniesť (okrem vecí na svoj program)</h2>
+                                        <ul>
+                                            <li>Čokoládu či koláč 😁</li>
+                                            <li>Notebook a/alebo gitaru, ak si to na chystačke sľúbil</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col col-6 border-right-0 photo">
+                                <img src="@veduci.Fotka"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <h2>Bonusy:</h2>
+                                @{
+                                    var zoznamBonusov = Rozvrh.Veduci.SelectMany(v => v.Ulohy.Select(u => new {v.Prezyvka, u})).GroupBy(x => x.u);
+                                    @foreach (var bonus in zoznamBonusov)
+                                    {
+                                        @bonus.Key<text>:</text>
+                                        @string.Join(", ", bonus.Select(v => v.Prezyvka))<br/>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-rb col-4">
+                        <h2>Zoznam prednášok:</h2>
+                        @{
+                            var prednasky = Rozvrh.Dni
+                                .SelectMany(
+                                    d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Prednáška")
+                                        .SelectMany((a, i) => a.Veduci.Select(a => new {Veduci = a, N = i})));
+                            foreach (var aktivitaVeduci in prednasky)
                             {
-                                <text>(@aktivitaVeduci.Veduci.Popis[0]@aktivitaVeduci.N) @aktivitaVeduci.Veduci.Veduci.Prezyvka: @aktivitaVeduci.Veduci.Popis.Substring(2)</text><br />
+                                if (aktivitaVeduci.Veduci.Popis?.Length > 2)
+                                {
+                                    <text>(@aktivitaVeduci.Veduci.Popis[0]@aktivitaVeduci.N) @aktivitaVeduci.Veduci.Veduci.Prezyvka: @aktivitaVeduci.Veduci.Popis.Substring(2)</text>
+                                    <br/>
+                                }
                             }
                         }
-                    }
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="border-rb col-9">
+                        <h2>Semináre:</h2>
+                        @{
+                            var seminare = Rozvrh.SablonyAktivit.FirstOrDefault(k => k.Typ == "Seminár");
+                            if (seminare != null)
+                            {
+                                foreach (var seminar in seminare.Veduci)
+                                {
+                                    <text>@seminar.Veduci.Prezyvka: @seminar.Popis</text>
+                                    <br/>
+                                }
+                            }
+                        }
+                    </div>
+                    <div class="border-rb col-3">
+                        <h2>Rozprávania:</h2>
+                        @{
+                            var rozpravania = Rozvrh.Dni
+                                .SelectMany(
+                                    d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Rozprávanie")
+                                        .SelectMany((a, i) => a.Veduci.Select(a => new {Veduci = a, N = i})));
+                            foreach (var rozpravanieBloky in rozpravania.GroupBy(x => x.N))
+                            {
+                                @rozpravanieBloky.Key
+                                ;
+                                foreach (var rozpravanie in rozpravanieBloky)
+                                {
+                                    <text>(@rozpravanie.Veduci.Veduci.Prezyvka: @rozpravanie.Veduci.Popis</text>
+                                    <br/>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col col-full">
+                        <h2>A ešte</h2>
+                        <ul>
+                            <li>Pripraviť si večerné čítanie</li>
+                            <li>Pripraviť si večerné čítanie</li>
+                            <li>Pripraviť si večerné čítanie</li>
+                            <li>Pripraviť si večerné čítanie</li>
+                            <li>Pripraviť si večerné čítanie</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="border-rb col-9">
-                    <h2>Semináre:</h2>
-                    @{
-                        var seminare = Rozvrh.SablonyAktivit.FirstOrDefault(k => k.Typ == "Seminár");
-                        if (seminare != null)
-                        {
-                            foreach (var seminar in seminare.Veduci)
-                            {
-                                <text>@seminar.Veduci.Prezyvka: @seminar.Popis</text><br />
-                            }
-                        }
-                    }
-                </div>
-                <div class="border-rb col-3">
-                    <h2>Rozprávania:</h2>
-                    @{
-                        var rozpravania = Rozvrh.Dni
-                            .SelectMany(
-                                d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Rozprávanie")
-                                    .SelectMany((a, i) => a.Veduci.Select(a => new { Veduci = a, N = i })));
-                        foreach (var rozpravanieBloky in rozpravania.GroupBy(x => x.N))
-                        {
-                            @rozpravanieBloky.Key;
-                            foreach (var rozpravanie in rozpravanieBloky)
-                            {
-                                <text>(@rozpravanie.Veduci.Veduci.Prezyvka: @rozpravanie.Veduci.Popis</text><br />
-                            }
-                        }
-                    }
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col col-full">
-                    <h2>A ešte</h2>
-                    <ul>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
-                    </ul>
-                </div>
-            </div>
         </div>
+        <div class="landscape">
+            <PlachtaView Editable="false" Rozvrh="Rozvrh" VeduciToHilight="veduci"></PlachtaView>
+        </div>
+    }
 
-    </div>
-    <div class="landscape">
-        <PlachtaView Editable="false" Rozvrh="Rozvrh" VeduciToHilight="veduci"></PlachtaView>
-    </div>
+    <style>
+        .aktivita.veduci-aktivity > div::before, .den.veduci-dna .title {
+            background: rgba(@RGBAVal);
+        }
+    </style>
 }
 
-<style>
-    .aktivita.veduci-aktivity > div::before, .den.veduci-dna .title {
-        background: rgba(@RGBAVal);
-    }
-</style>
-
 @code {
-    public Rozvrh Rozvrh { get; private set; }
+public Rozvrh Rozvrh { get; private set; }
     public string RGBAVal { get; set; } = "100,100,100,0.2";
 
     protected override void OnInitialized()
@@ -216,4 +225,4 @@
         }
     }
 
-}
+    }
