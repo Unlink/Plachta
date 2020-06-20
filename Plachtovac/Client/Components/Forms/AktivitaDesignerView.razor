@@ -55,7 +55,9 @@
                 <a class="dropdown-item" @onclick="() => InsertExternalImage(Width - 10, Height - 10)">Obrázok z url</a>
                 <a class="dropdown-item btn btn-fileOpen" style="position: relative">
                     Obrázok zo súboru
-                    <FileEdit Changed="InsertFile" Filter="image/*" />
+                    <div class="custom-control custom-file">
+                        <input type="file" class="custom-file-input" @ref="@inputTypeFileElement" @oninput="InsertFile" accept="image/*" />
+                    </div>
                 </a>
             </div>
         </div>
@@ -72,6 +74,8 @@
 
     [Parameter]
     public Rozvrh Rozvrh { get; set; }
+
+    private ElementReference inputTypeFileElement;
 
     private bool _imageConversionInProgress = false;
     private string cotentStyle => _imageConversionInProgress ? "visibility:collapse" : "";
@@ -132,24 +136,25 @@
 
     }
 
-    public async Task InsertFile(FileChangedEventArgs e)
+    public async Task InsertFile()
     {
         try
         {
-            foreach (var file in e.Files)
-            {
-                _imageConversionInProgress = true;
-                StateHasChanged();
-                await InsertFile(file, Width - 10, Height - 10);
-                _imageConversionInProgress = false;
-            }
+            _imageConversionInProgress = true;
+            StateHasChanged();
+            await InsertFile(inputTypeFileElement, Width - 10, Height - 10);
         }
         catch (Exception exc)
         {
             Console.WriteLine(exc.Message);
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), exc.Message);
+            var modal = ModalService.Show<YesNoModal>($"Nepodarilo sa uploadnut obrázok", parameters);
+            await modal.Result;
         }
         finally
         {
+            _imageConversionInProgress = false;
             this.StateHasChanged();
         }
     }

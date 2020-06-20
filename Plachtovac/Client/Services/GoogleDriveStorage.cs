@@ -69,5 +69,15 @@ namespace Plachtovac.Client.Services
                 .ToListAsync();
         }
 
+        public async Task<string> StoreImage(string fileInfoName, string fileInfoType, byte[] bytes)
+        {
+            if (!IsTracked()) throw new InvalidOperationException("Project is not tracked");
+            var file = await _driveWrapper.GetOrCreateEntry(fileInfoName, fileInfoType, _currentProject);
+            using (var ms = new MemoryStream(bytes))
+            {
+                await _driveWrapper.SaveFile(file, ms);
+                return await _driveWrapper.ShareFile(file);
+            }
+        }
     }
 }

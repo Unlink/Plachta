@@ -5,6 +5,7 @@
 @using Blazor.FileReader
 @using Blazorise
 @using Newtonsoft.Json
+@using Plachtovac.Client.Components.Forms
 @using JsonSerializer = System.Text.Json.JsonSerializer
 @using Plachtovac.Shared.BO.GraphicsBlocks
 
@@ -26,7 +27,9 @@
     <a class="dropdown-item" @onclick="() => InsertExternalImage(1000, 1000)">Obrázok z URL</a>
     <a class="dropdown-item btn btn-fileOpen">
         Obrázok zo súboru
-        <FileEdit Changed="InsertFile" Filter="image/*" />
+        <div class="custom-control custom-file">
+            <input type="file" class="custom-file-input" @ref="@inputTypeFileElement" @oninput="InsertFile" accept="image/*" />
+        </div>
     </a>
 </div>
 
@@ -43,6 +46,7 @@
 
     private bool _imageConversionInProgress;
 
+    private ElementReference inputTypeFileElement;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -54,7 +58,7 @@
             if (PlachtaView.Rozvrh.CustomGraphicsCanvasSize != null)
             {
                 scaleX = CurrentCanvasSize.Width / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Width;
-                scaleY =  CurrentCanvasSize.Height / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Height;
+                scaleY = CurrentCanvasSize.Height / PlachtaView.Rozvrh.CustomGraphicsCanvasSize.Height;
             }
 
 
@@ -71,21 +75,22 @@
         }
     }
 
-    public async Task InsertFile(FileChangedEventArgs e)
+    public async Task InsertFile()
     {
         try
         {
-            foreach (var file in e.Files)
-            {
-                _imageConversionInProgress = true;
-                StateHasChanged();
-                await InsertFile(file, 1000, 1000);
-                _imageConversionInProgress = false;
-            }
+            _imageConversionInProgress = true;
+            StateHasChanged();
+            await InsertFile(inputTypeFileElement, 1000, 1000);
         }
         catch (Exception exc)
         {
             Console.WriteLine(exc.Message);
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(YesNoModal.Message), exc.Message);
+            var modal = ModalService.Show<YesNoModal>($"Nepodarilo sa uploadnut obrázok", parameters);
+            await modal.Result;
+            _imageConversionInProgress = false;
         }
         finally
         {

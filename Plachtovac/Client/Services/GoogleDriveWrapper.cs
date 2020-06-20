@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
 using Google.Apis.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -112,6 +113,18 @@ namespace Plachtovac.Client.Services
                 });
             }
             throw new UnauthorizedAccessException();
+        }
+
+        public async Task<string> ShareFile(File file)
+        {
+            var service = await GetService();
+            var permission = new Permission
+            {
+                Type = "anyone",
+                Role = "reader"
+            };
+            var createdPermission = await service.Permissions.Create(permission, file.Id).ExecuteAsync();
+            return $"https://drive.google.com/uc?export=view&id={file.Id}";
         }
     }
 }
