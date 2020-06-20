@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Blazor.FileReader;
@@ -33,12 +34,21 @@ namespace Plachtovac.Client
 
             builder.Services.AddOidcAuthentication(options =>
             {
-                builder.Configuration.Bind("Local", options.ProviderOptions);
+                options.ProviderOptions.Authority = "https://accounts.google.com/";
+                options.ProviderOptions.RedirectUri = "https://localhost:5001/authentication/login-callback";
+                options.ProviderOptions.PostLogoutRedirectUri = "https://localhost:5001/authentication/logout-callback";
+                options.ProviderOptions.ClientId = "259222768075-ke2p7ppur3q34kfed28qnu0puklisa55.apps.googleusercontent.com";
+                options.ProviderOptions.DefaultScopes.Add("https://www.googleapis.com/auth/drive.file");
+                //options.ProviderOptions.DefaultScopes.Add("https://www.googleapis.com/auth/drive.appdata");
+                options.ProviderOptions.ResponseType = "id_token token";
+                options.UserOptions.AuthenticationType = "google";
             });
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             builder.Services.AddSingleton<PlachtaService>();
+            builder.Services.AddScoped<GoogleDriveWrapper>();
+            builder.Services.AddScoped<GoogleDriveStorage>();
 
             var host = builder.Build();
 

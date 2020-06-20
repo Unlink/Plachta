@@ -6,11 +6,12 @@
 @using Plachtovac.Shared.BO
 @using System.IO
 @using System.Text
+@using Microsoft.AspNetCore.Components.Authorization
 
 @inject PlachtaService PlachtaService
 @inject IModalService Modal
 @inject IJSRuntime JSRuntime
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject GoogleDriveStorage CloudStorage
 
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" id="navbarFileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -19,19 +20,24 @@
     <div class="dropdown-menu" aria-labelledby="navbarFileDropdown">
         <button class="dropdown-item" @onclick="NewRozvrh">Nový</button>
         <button class="dropdown-item btn-fileOpen">
-            Otvoriť
+            Otvoriť zo súboru
             <FileEdit Changed="OpenRozvrh" Written="OnWritten" Progressed="OnProgressed" MaxMessageSize="524288" Filter="text/json" />
         </button>
         @if (PlachtaService.AktualnyRozvrh != null)
         {
-            <button class="dropdown-item" @onclick="SaveRozvrh">Uložiť</button>
+            <button class="dropdown-item" @onclick="SaveRozvrh">Stiahnúť</button>
         }
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item" @onclick="LoadData">Quick Load</button>
-        @if (PlachtaService.AktualnyRozvrh != null)
-        {
-            <button class="dropdown-item" @onclick="SaveData">Quick Save</button>
-        }
+        <AuthorizeView>
+            <Authorized>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" @onclick="OpenFromCloud">Otvorit z cloudu</button>
+                @if (CloudStorage.IsTracked())
+                {
+                    <button class="dropdown-item" @onclick="SaveToCloud">Uložiť do cloudu</button>
+                }
+                <button class="dropdown-item" @onclick="SaveAsToCloud">Uložiť ako do cloudu</button>
+            </Authorized>
+        </AuthorizeView>
     </div>
 </li>
 @if (PlachtaService.AktualnyRozvrh != null)
@@ -136,45 +142,6 @@
         }
     }
 
-    public async Task SaveData()
-    {
-        var json = PlachtaService.ExportRozvrh();
-        Console.WriteLine(json);
-        await LocalStorage.SetItemAsync<string>("plachta", Converters.ToBase64(json));
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol ulozeny");
-        Modal.Show<YesNoModal>($"Information", parameters);
-    }
-
-    public async Task LoadData()
-    {
-        if (PlachtaService.AktualnyRozvrh != null)
-        {
-            var parameters = new ModalParameters();
-            parameters.Add(nameof(YesNoModal.Message), "Skutočne chcete načítať rozvrh? Neuložené zmeny budú stratené");
-            var modal = Modal.Show<YesNoModal>($"Information", parameters);
-            if ((await modal.Result).Cancelled)
-            {
-                return;
-            }
-        }
-        try
-        {
-            PlachtaService.LoadFromJson(Converters.FromBase64(await LocalStorage.GetItemAsync<string>("plachta")));
-
-            var parameters = new ModalParameters();
-            parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
-            Modal.Show<YesNoModal>($"Information", parameters);
-        }
-        catch
-        {
-            var parameters = new ModalParameters();
-            parameters.Add(nameof(YesNoModal.Message), "Nepodrilo sa načítať rozvrh");
-            Modal.Show<YesNoModal>($"Information", parameters);
-        }
-        StateHasChanged();
-    }
-
     private async Task NewRozvrh()
     {
         if (PlachtaService.AktualnyRozvrh != null)
@@ -248,6 +215,95 @@
     void OnProgressed(FileProgressedEventArgs e)
     {
         Console.WriteLine($"File: {e.File.Name} Progress: {e.Percentage}");
+    }
+
+    private async Task OpenFromCloud()
+    {
+        try
+        {
+            var projects = await CloudStorage.GetProjects();
+            var parameters2 = new ModalParameters();
+            parameters2.Add(nameof(CloudProjectSelectForm.Rozvrhy), projects.ToList());
+            var result = await Modal.Show<CloudProjectSelectForm>($"Otvor projekt", parameters2).Result;
+            if (!result.Cancelled)
+            {
+                var project = result.Data.ToString();
+                var json = await CloudStorage.Open(project);
+                PlachtaService.LoadFromJson(json);
+                var parameters = new ModalParameters();
+                parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
+                Modal.Show<YesNoModal>($"Information", parameters);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            var parameters2 = new ModalParameters();
+            parameters2.Add(nameof(YesNoModal.Message), "Projekt sa nepodarilo otvoriť\n" + ex.Message);
+            await Modal.Show<YesNoModal>($"Error", parameters2).Result;
+        }
+    }
+
+    private async Task SaveToCloud()
+    {
+        try
+        {
+            await CloudStorage.Save(PlachtaService.ExportRozvrh());
+            var parameters2 = new ModalParameters();
+            parameters2.Add(nameof(YesNoModal.Message), "Projekt uložený");
+            await Modal.Show<YesNoModal>($"Information", parameters2).Result;
+        }
+        catch (Exception ex)
+        {
+            var parameters2 = new ModalParameters();
+            parameters2.Add(nameof(YesNoModal.Message), "Projekt sa nepodarilo uložiť\n" + ex.Message);
+            await Modal.Show<YesNoModal>($"Error", parameters2).Result;
+        }
+    }
+
+    private async Task SaveAsToCloud()
+    {
+        try
+        {
+            string nazov = PlachtaService.AktualnyRozvrh.Nazov;
+
+            bool tryAgain = true;
+            do
+            {
+                var parameters = new ModalParameters();
+                parameters.Add(nameof(BasicInputModal.Title), "Názov");
+                parameters.Add(nameof(BasicInputModal.Data), nazov);
+                var modal = Modal.Show<BasicInputModal>($"Uložiť ako", parameters);
+                if ((await modal.Result).Cancelled)
+                {
+                    return;
+                }
+                nazov = modal.Result.Result.Data.ToString();
+
+                if ((await CloudStorage.GetProjects()).Contains(nazov))
+                {
+                    parameters = new ModalParameters();
+                    parameters.Add(nameof(YesNoModal.Message), "Takýto projekt už existuje, chcete ho prepísať?");
+                    modal = Modal.Show<YesNoModal>($"Uložiť ako", parameters);
+                    if ((await modal.Result).Cancelled)
+                    {
+                        continue;
+                    }
+                }
+                tryAgain = false;
+            } while (tryAgain);
+
+            await CloudStorage.Save(PlachtaService.ExportRozvrh(), nazov);
+            var parameters2 = new ModalParameters();
+            parameters2.Add(nameof(YesNoModal.Message), "Projekt uložený");
+            await Modal.Show<YesNoModal>($"Information", parameters2).Result;
+        }
+        catch (Exception ex)
+        {
+            var parameters2 = new ModalParameters();
+            parameters2.Add(nameof(YesNoModal.Message), "Projekt sa nepodarilo uložiť\n"+ex.Message);
+            await Modal.Show<YesNoModal>($"Error", parameters2).Result;
+        }
     }
 
 }
