@@ -12,11 +12,8 @@
 @inject NavigationManager NavigationManager
 @inject IModalService Modal
 
-<div class="alert alert-info alert-dismissible fade show" role="alert">
+<div class="alert alert-info fade show" role="alert">
     Táto stránka slúži na hromadnú editáciu vedúcich. Zmenené údaje sa ukladajú automaticky
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
 </div>
 
 @if (PlachtaService.AktualnyRozvrh != null)
