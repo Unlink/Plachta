@@ -8,13 +8,17 @@
 @inject IJSRuntime JSRuntime
 
 <div @ref="AktivitaHtmlElement" class="aktivita @(HilightAktivita() ? "veduci-aktivity" : "")" draggable="true"
-      @ondragstart="e => HandleDragStart(e)"
-      @ondragend="e => HandleDragEnd(e)"
-      style="left: @Pozicia.ToString("N", CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N", CultureInfo.InvariantCulture)%">
+     @ondragstart="e => HandleDragStart(e)"
+     @ondragend="e => HandleDragEnd(e)"
+     style="left: @Pozicia.ToString("N", CultureInfo.InvariantCulture)%; width: @Trvanie.ToString("N", CultureInfo.InvariantCulture)%">
     <div>@((MarkupString) Aktivita.Design)</div>
     @if (Aktivita.ZobrazCas)
     {
         <span class="aktivitaTime">@Aktivita.Time.ToString(@"hh\:mm")</span>
+    }
+    @if (Aktivita.ZobrazCasKonca)
+    {
+        <span class="aktivitaEndTime">@((Aktivita.Time + Aktivita.Trvanie).ToString(@"hh\:mm"))</span>
     }
 </div>
 

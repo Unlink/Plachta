@@ -56,6 +56,7 @@ namespace Plachtovac.Shared.BO
         }
 
         public bool ZobrazCas { get; set; }
+        public bool ZobrazCasKonca { get; set; }
 
         private string _design = null;
         private List<AktivitaVeduci> _veduci;
