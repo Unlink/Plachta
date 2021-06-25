@@ -23,14 +23,14 @@
         SubmitButton.Focus();
     }
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
-        BlazoredModal.Close(ModalResult.Ok(true));
+        await BlazoredModal.CloseAsync(ModalResult.Ok(true));
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
 }

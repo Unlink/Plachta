@@ -43,16 +43,16 @@
     }
 
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
         Console.WriteLine($"Nastavujem veduceho dna {_veduci}");
         Den.Veduci = _veduci == -1 ? null : Rozvrh.Veduci[_veduci];
-        BlazoredModal.Close(ModalResult.Ok(Den));
+        await BlazoredModal.CloseAsync(ModalResult.Ok(Den));
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
 }

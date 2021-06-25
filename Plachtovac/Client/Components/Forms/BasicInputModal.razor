@@ -36,14 +36,14 @@
         }
     }
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
-        BlazoredModal.Close(ModalResult.Ok(Data));
+        await BlazoredModal.CloseAsync(ModalResult.Ok(Data));
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
 }

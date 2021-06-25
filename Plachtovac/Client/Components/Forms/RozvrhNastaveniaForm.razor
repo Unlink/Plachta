@@ -137,7 +137,7 @@
             dni--;
     }
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
         if (errors == null)
         {
@@ -148,7 +148,7 @@
             Rozvrh.KoniecDna = ParseTime(_koniecDna);
             Rozvrh.Program = Program;
             Rozvrh.Farba = Farba;
-            BlazoredModal.Close(ModalResult.Ok(Rozvrh));
+            await BlazoredModal.CloseAsync(ModalResult.Ok(Rozvrh));
         }
     }
 
@@ -170,9 +170,9 @@
 
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
 

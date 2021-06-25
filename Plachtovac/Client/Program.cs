@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Blazor.FileReader;
 using Blazored.LocalStorage;
 using Blazored.Modal;
 using Blazorise;
@@ -13,6 +12,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Plachtovac.Client.Services;
+using Tewr.Blazor.FileReader;
 
 namespace Plachtovac.Client
 {
@@ -21,7 +21,7 @@ namespace Plachtovac.Client
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.RootComponents.Add<App>("app");
+            builder.RootComponents.Add<App>("#app");
             builder.Services
                 .AddBlazorContextMenu()
                 .AddBlazorise(options => { options.ChangeTextOnKeyPress = true; })
@@ -44,18 +44,13 @@ namespace Plachtovac.Client
                 options.UserOptions.AuthenticationType = "google";
             });
 
-            builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             builder.Services.AddSingleton<PlachtaService>();
             builder.Services.AddScoped<GoogleDriveWrapper>();
             builder.Services.AddScoped<GoogleDriveStorage>();
 
             var host = builder.Build();
-
-            host.Services
-                .UseMaterialProviders()
-                .UseMaterialIcons()
-                .UseFontAwesomeIcons();
 
             await host.RunAsync();
         }

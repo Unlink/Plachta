@@ -445,3 +445,8 @@ ul.sablonyAktivit {
     width: calc(100% - 3px);
     height: calc(100% - 1px);
 }
+
+.blazored-modal-title {
+    line-height: 2rem;
+    font-size: 1.5rem;
+}

@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Blazor.FileReader;
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using Blazorise;
@@ -15,6 +14,7 @@ using Plachtovac.Client.Components.Forms;
 using Plachtovac.Client.Helpers;
 using Plachtovac.Client.Services;
 using Plachtovac.Shared.BO.GraphicsBlocks;
+using Tewr.Blazor.FileReader;
 
 namespace Plachtovac.Client.Components.Plachta
 {

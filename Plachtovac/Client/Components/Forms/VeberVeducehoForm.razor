@@ -25,14 +25,14 @@
 
     private int _veduci = 0;
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
-        BlazoredModal.Close(ModalResult.Ok(ZoznamVeducich[_veduci]));
+        await BlazoredModal.CloseAsync(ModalResult.Ok(ZoznamVeducich[_veduci]));
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
 }

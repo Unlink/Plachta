@@ -108,19 +108,19 @@
         }
     }
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
         Veduci.Prezyvka = prezyvka;
         Veduci.Povinnosti = povinnosti;
         Veduci.Druzinka = druzinka;
         Veduci.Ulohy = ulohy;
         Veduci.Fotka = fotka;
-        BlazoredModal.Close(ModalResult.Ok(Veduci));
+        await BlazoredModal.CloseAsync(ModalResult.Ok(Veduci));
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
     private void OdstranUlohu(string uloha)

@@ -25,14 +25,14 @@
 
     private int _selectedRozvrh = 0;
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
-        BlazoredModal.Close(ModalResult.Ok(Rozvrhy[_selectedRozvrh]));
+        await BlazoredModal.CloseAsync(ModalResult.Ok(Rozvrhy[_selectedRozvrh]));
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
 }

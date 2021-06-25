@@ -1,5 +1,4 @@
 ﻿@using System.ComponentModel
-@using Blazor.FileReader
 @using Newtonsoft.Json
 @using JsonSerializer = System.Text.Json.JsonSerializer
 @using Blazorise
@@ -171,11 +170,11 @@
             Sablona.AktivitaItems.Add(item.Value.M);
         }
 
-        BlazoredModal.Close(ModalResult.Ok(Sablona));
+        await BlazoredModal.CloseAsync(ModalResult.Ok(Sablona));
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 }

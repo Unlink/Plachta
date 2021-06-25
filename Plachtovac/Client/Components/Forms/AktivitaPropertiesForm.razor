@@ -97,7 +97,7 @@
         }
     }
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
         if (validations.ValidateAll())
         {
@@ -112,12 +112,12 @@
             }
             Aktivita.ZobrazCas = hasTimeBadge;
 
-            BlazoredModal.Close(ModalResult.Ok(Aktivita));
+            await BlazoredModal.CloseAsync(ModalResult.Ok(Aktivita));
         }
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 }

@@ -46,7 +46,7 @@
     private string[] _fonts = new[] { "Arial", "Comic Sans" };
 
 
-    private async Task PocetRiadkovChanged(int newValue)
+    private void PocetRiadkovChanged(int newValue)
     {
         if (GraphicsItem is ZoznamVeducichTextGraphicsItem zv && Parent is AktivitaDesignerView parent)
         {

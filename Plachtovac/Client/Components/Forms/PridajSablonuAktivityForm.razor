@@ -86,7 +86,7 @@
         }
     }
 
-    void SubmitForm()
+    async Task SubmitForm()
     {
         if (validations.ValidateAll())
         {
@@ -96,13 +96,13 @@
             Sablona.Veduci.Clear();
             Sablona.Veduci.AddRange(assignForm.GetResult());
 
-            BlazoredModal.Close(ModalResult.Ok(Sablona));
+            await BlazoredModal.CloseAsync(ModalResult.Ok(Sablona));
         }
     }
 
-    void Cancel()
+    async Task Cancel()
     {
-        BlazoredModal.Cancel();
+        await BlazoredModal.CancelAsync();
     }
 
     private void ValidateDuration(ValidatorEventArgs obj)
