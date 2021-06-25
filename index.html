@@ -18,14 +18,14 @@
     <link href="_content/Blazorise.Material/blazorise.material.css" rel="stylesheet" />
     <link href="_content/Blazor.ContextMenu/blazorContextMenu.min.css" rel="stylesheet" />
     <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
-    <link href="css/site.css" rel="stylesheet" media="all"/>
+    <link href="css/site.css" rel="stylesheet" media="all" />
     <link href="css/print.css" rel="stylesheet" media="print" />
-
+    <link href="Plachtovac.Client.styles.css" rel="stylesheet" />
     <link href="manifest.json" rel="manifest" />
 </head>
 
 <body>
-    <app>
+    <div id="app">
 
         <div class="loader-box">
             <i class="fa-4x fas fa-cog fa-spin"></i>
@@ -36,7 +36,7 @@
         <!-- Added to force fa load -->
         <i style="visibility:hidden" class="fas fa-exclamation"></i>
 
-    </app>
+    </div>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -56,17 +56,12 @@
     <script src="_content/Blazorise.Material/blazorise.material.js"></script>
     <script src="_content/Blazor.ContextMenu/blazorContextMenu.min.js"></script>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-
+    <script src="_content/Blazored.Modal/blazored.modal.js"></script>
 
     <script src="helpers.js"></script>
     <script src="FabricJSBindings.js"></script>
 
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
-
-    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-    <script>
-        Blazor.start();
-    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
 
 </body>
 

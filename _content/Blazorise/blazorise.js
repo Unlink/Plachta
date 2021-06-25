@@ -3,6 +3,8 @@ if (!window.blazorise) {
 }
 
 window.blazorise = {
+    lastClickedDocumentElement: null,
+
     utils: {
         getRequiredElement: (element, elementId) => {
             if (element)
@@ -25,6 +27,7 @@ window.blazorise = {
         }
         return true;
     },
+
     // toggles a classname on the given element id
     toggleClass: (element, classname) => {
         if (element) {
@@ -53,6 +56,13 @@ window.blazorise = {
             return element.parentElement.classList.contains(classname);
         }
         return false;
+    },
+
+    // sets the value to the element property
+    setProperty: (element, property, value) => {
+        if (element && property) {
+            element[property] = value;
+        }
     },
 
     getElementInfo: (element, elementId) => {
@@ -97,6 +107,37 @@ window.blazorise = {
         return true;
     },
 
+    hasSelectionCapabilities: (element) => {
+        const nodeName = element && element.nodeName && element.nodeName.toLowerCase();
+
+        return (
+            nodeName &&
+            ((nodeName === 'input' &&
+                (element.type === 'text' ||
+                    element.type === 'search' ||
+                    element.type === 'tel' ||
+                    element.type === 'url' ||
+                    element.type === 'password')) ||
+                nodeName === 'textarea' ||
+                element.contentEditable === 'true')
+        );
+    },
+
+    setCaret: (element, caret) => {
+        if (window.blazorise.hasSelectionCapabilities(element)) {
+            window.requestAnimationFrame(() => {
+                element.selectionStart = caret;
+                element.selectionEnd = caret;
+            });
+        }
+    },
+
+    getCaret: (element) => {
+        return window.blazorise.hasSelectionCapabilities(element)
+            ? element.selectionStart :
+            -1;
+    },
+
     getSelectedOptions: (elementId) => {
         const element = document.getElementById(elementId);
         const len = element.options.length;
@@ -111,6 +152,24 @@ window.blazorise = {
         }
 
         return opts;
+    },
+
+    setSelectedOptions: (elementId, values) => {
+        const element = document.getElementById(elementId);
+
+        if (element && element.options) {
+            const len = element.options.length;
+
+            for (var i = 0; i < len; i++) {
+                const opt = element.options[i];
+
+                if (values && values.find(x => x !== null && x.toString() === opt.value)) {
+                    opt.selected = true;
+                } else {
+                    opt.selected = false;
+                }
+            }
+        }
     },
 
     // holds the list of components that are triggers to close other components
@@ -144,22 +203,26 @@ window.blazorise = {
         return false;
     },
 
-    registerClosableComponent: (elementId, dotnetAdapter) => {
-        if (window.blazorise.isClosableComponent(elementId) !== true) {
-            window.blazorise.addClosableComponent(elementId, dotnetAdapter);
+    registerClosableComponent: (element, dotnetAdapter) => {
+        if (element) {
+            if (window.blazorise.isClosableComponent(element.id) !== true) {
+                window.blazorise.addClosableComponent(element.id, dotnetAdapter);
+            }
         }
     },
 
-    unregisterClosableComponent: (elementId) => {
-        const index = window.blazorise.findClosableComponentIndex(elementId);
-        if (index !== -1) {
-            window.blazorise.closableComponents.splice(index, 1);
+    unregisterClosableComponent: (element) => {
+        if (element) {
+            const index = window.blazorise.findClosableComponentIndex(element.id);
+            if (index !== -1) {
+                window.blazorise.closableComponents.splice(index, 1);
+            }
         }
     },
 
-    tryClose: (closable, targetElementId, isEscapeKey) => {
+    tryClose: (closable, targetElementId, isEscapeKey, isChildClicked) => {
         let request = new Promise((resolve, reject) => {
-            closable.dotnetAdapter.invokeMethodAsync('SafeToClose', targetElementId, isEscapeKey ? 'escape' : 'leave')
+            closable.dotnetAdapter.invokeMethodAsync('SafeToClose', targetElementId, isEscapeKey ? 'escape' : 'leave', isChildClicked)
                 .then((result) => resolve({ elementId: closable.elementId, dotnetAdapter: closable.dotnetAdapter, status: result === true ? 'ok' : 'cancelled' }))
                 .catch(() => resolve({ elementId: closable.elementId, status: 'error' }));
         });
@@ -261,6 +324,11 @@ window.blazorise = {
             return true;
         },
         keyDown: (validator, e) => {
+            if (e.target.readOnly) {
+                e.preventDefault();
+                return true;
+            }
+
             if (e.which === 38) {
                 validator.stepApply(1);
             } else if (e.which === 40) {
@@ -308,7 +376,7 @@ window.blazorise = {
                 selection = this.carret();
 
             if (value = value.substring(0, selection[0]) + currentValue + value.substring(selection[1]), !!this.regex().test(value)) {
-                return value = (value || "").replace(this.separator, "."), value === "-" && this.min < 0 || value >= this.min && value <= this.max;
+                return value = (value || "").replace(this.separator, ".");
             }
 
             return false;
@@ -400,8 +468,13 @@ window.blazorise = {
         }
     },
     fileEdit: {
+        _instances: [],
+
         initialize: (adapter, element, elementId) => {
             var nextFileId = 0;
+
+            // save an instance of adapter
+            window.blazorise.fileEdit._instances[elementId] = new window.blazorise.FileEditInfo(adapter, element, elementId);
 
             element.addEventListener('change', function handleInputFileChange(event) {
                 // Reduce to purely serializable data, plus build an index by ID
@@ -430,7 +503,24 @@ window.blazorise = {
             return true;
         },
         destroy: (element, elementId) => {
-            // TODO:
+            var instances = window.blazorise.fileEdit._instances || {};
+            delete instances[elementId];
+            return true;
+        },
+
+        reset: (element, elementId) => {
+            if (element) {
+                element.value = '';
+
+                var fileEditInfo = window.blazorise.fileEdit._instances[elementId];
+
+                if (fileEditInfo) {
+                    fileEditInfo.adapter.invokeMethodAsync('NotifyChange', []).then(null, function (err) {
+                        throw new Error(err);
+                    });
+                }
+            }
+
             return true;
         },
 
@@ -479,15 +569,76 @@ window.blazorise = {
                 element.click();
             }
         }
+    },
+
+    FileEditInfo: function (adapter, element, elementId) {
+        this.adapter = adapter;
+        this.element = element;
+        this.elementId = elementId;
+    },
+
+    breakpoint: {
+        // Get the current breakpoint
+        getBreakpoint: function () {
+            return window.getComputedStyle(document.body, ':before').content.replace(/\"/g, '');
+        },
+
+        // holds the list of components that are triggers to breakpoint
+        breakpointComponents: [],
+
+        lastBreakpoint: null,
+
+        addBreakpointComponent: (elementId, dotnetAdapter) => {
+            window.blazorise.breakpoint.breakpointComponents.push({ elementId: elementId, dotnetAdapter: dotnetAdapter });
+        },
+
+        findBreakpointComponentIndex: (elementId) => {
+            for (index = 0; index < window.blazorise.breakpoint.breakpointComponents.length; ++index) {
+                if (window.blazorise.breakpoint.breakpointComponents[index].elementId === elementId)
+                    return index;
+            }
+            return -1;
+        },
+
+        isBreakpointComponent: (elementId) => {
+            for (index = 0; index < window.blazorise.breakpoint.breakpointComponents.length; ++index) {
+                if (window.blazorise.breakpoint.breakpointComponents[index].elementId === elementId)
+                    return true;
+            }
+            return false;
+        },
+
+        registerBreakpointComponent: (elementId, dotnetAdapter) => {
+            if (window.blazorise.breakpoint.isBreakpointComponent(elementId) !== true) {
+                window.blazorise.breakpoint.addBreakpointComponent(elementId, dotnetAdapter);
+            }
+        },
+
+        unregisterBreakpointComponent: (elementId) => {
+            const index = window.blazorise.breakpoint.findBreakpointComponentIndex(elementId);
+            if (index !== -1) {
+                window.blazorise.breakpoint.breakpointComponents.splice(index, 1);
+            }
+        },
+
+        onBreakpoint: (dotnetAdapter, currentBreakpoint) => {
+            dotnetAdapter.invokeMethodAsync('OnBreakpoint', currentBreakpoint);
+        }
     }
 };
 
-document.addEventListener('click', function handler(evt) {
-    if (window.blazorise.closableComponents && window.blazorise.closableComponents.length > 0) {
+
+
+document.addEventListener('mousedown', function handler(evt) {
+    window.blazorise.lastClickedDocumentElement = evt.target;
+});
+
+document.addEventListener('mouseup', function handler(evt) {
+    if (evt.target === window.blazorise.lastClickedDocumentElement && window.blazorise.closableComponents && window.blazorise.closableComponents.length > 0) {
         const lastClosable = window.blazorise.closableComponents[window.blazorise.closableComponents.length - 1];
 
         if (lastClosable) {
-            window.blazorise.tryClose(lastClosable, evt.target.id, false);
+            window.blazorise.tryClose(lastClosable, evt.target.id, false, hasParentInTree(evt.target, lastClosable.elementId));
         }
     }
 });
@@ -497,10 +648,28 @@ document.addEventListener('keyup', function handler(evt) {
         const lastClosable = window.blazorise.closableComponents[window.blazorise.closableComponents.length - 1];
 
         if (lastClosable) {
-            window.blazorise.tryClose(lastClosable, lastClosable.elementId, true);
+            window.blazorise.tryClose(lastClosable, lastClosable.elementId, true, false);
         }
     }
 });
+
+// Recalculate breakpoint on resize
+window.addEventListener('resize', function () {
+    if (window.blazorise.breakpoint.breakpointComponents && window.blazorise.breakpoint.breakpointComponents.length > 0) {
+        var currentBreakpoint = window.blazorise.breakpoint.getBreakpoint();
+
+        if (window.blazorise.breakpoint.lastBreakpoint !== currentBreakpoint) {
+            window.blazorise.breakpoint.lastBreakpoint = currentBreakpoint;
+
+            for (index = 0; index < window.blazorise.breakpoint.breakpointComponents.length; ++index) {
+                window.blazorise.breakpoint.onBreakpoint(window.blazorise.breakpoint.breakpointComponents[index].dotnetAdapter, currentBreakpoint);
+            }
+        }
+    }
+});
+
+// Set initial breakpoint
+window.blazorise.breakpoint.lastBreakpoint = window.blazorise.breakpoint.getBreakpoint();
 
 function showPopper(element, tooltip, arrow, placement) {
     var thePopper = new Popper(element, tooltip,
@@ -550,6 +719,12 @@ function getArrayBufferFromFileAsync(elem, fileId) {
     }
 
     return file.readPromise;
+}
+
+function hasParentInTree(element, parentElementId) {
+    if (!element.parentElement) return false;
+    if (element.parentElement.id === parentElementId) return true;
+    return hasParentInTree(element.parentElement, parentElementId);
 }
 
 var uint8ToBase64 = (function () {

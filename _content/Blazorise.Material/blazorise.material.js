@@ -25,6 +25,8 @@ window.blazoriseMaterial = {
             containerHidden: 'body',
             firstDay: 1, // monday
             format: 'dd.mm.yyyy',
+            selectMonths: true,
+            selectYears: true,
             formatSubmit: formatSubmit,
             onClose: function (s) {
                 // trigger onchange event on the DateEdit component
@@ -34,14 +36,16 @@ window.blazoriseMaterial = {
         return true;
     },
     modal: {
-        open: (element, elementId) => {
+        open: (element, scrollToTop) => {
             window.blazorise.addClassToBody("modal-open");
 
-            element.querySelector('.modal-body').scrollTop = 0;
+            if (scrollToTop) {
+                element.querySelector('.modal-body').scrollTop = 0;
+            }
 
             return true;
         },
-        close: (element, elementId) => {
+        close: (element) => {
             window.blazorise.removeClassFromBody("modal-open");
 
             return true;

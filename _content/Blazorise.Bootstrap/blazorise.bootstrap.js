@@ -13,15 +13,37 @@ window.blazoriseBootstrap = {
         }
     },
     modal: {
-        open: (element, elementId) => {
-            window.blazorise.addClassToBody("modal-open");
+        open: (element, scrollToTop) => {
+            var modals = Number(document.body.getAttribute("data-modals") || "0");
 
-            element.querySelector('.modal-body').scrollTop = 0;
+            if (modals === 0) {
+                window.blazorise.addClassToBody("modal-open");
+            }
+
+            modals += 1;
+
+            document.body.setAttribute("data-modals", modals.toString());
+
+            if (scrollToTop) {
+                element.querySelector('.modal-body').scrollTop = 0;
+            }
 
             return true;
         },
-        close: (element, elementId) => {
-            window.blazorise.removeClassFromBody("modal-open");
+        close: (element) => {
+            var modals = Number(document.body.getAttribute("data-modals") || "0");
+
+            modals -= 1;
+
+            if (modals < 0) {
+                modals = 0;
+            }
+
+            if (modals === 0) {
+                window.blazorise.removeClassFromBody("modal-open");
+            }
+
+            document.body.setAttribute("data-modals", modals.toString());
 
             return true;
         }
