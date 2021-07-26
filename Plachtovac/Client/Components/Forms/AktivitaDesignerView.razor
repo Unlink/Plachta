@@ -115,21 +115,15 @@
             Fill = "#000000",
             Height = 15,
             Left = 10,
-            PocetRiadkov = 1,
+            PocetRiadkov = Math.Max(Math.Min(Sablona.Veduci.Count, 4), 1),
             Top = 10,
             Width = 40,
-            ScaleX = 1,
-            ScaleY = 1,
+            ScaleX = 0.4,
+            ScaleY = 0.4,
             FontFamily = "Comic Sans",
         };
 
-        var veduci = Sablona.Veduci;
-        if (Sablona.Veduci.Count == 0)
-        {
-            veduci = new List<AktivitaVeduci> { new AktivitaVeduci { Veduci = new Veduci { Prezyvka = "Veduci1" } }, new AktivitaVeduci { Veduci = new Veduci { Prezyvka = "Veduci2" } } };
-        }
-
-        textAktivita.NastavZoznamVeducich(veduci);
+        textAktivita.NastavZoznamVeducich(Sablona.Veduci, Sablona.VeduciSPopisom);
 
         await InsertItem(textAktivita);
 

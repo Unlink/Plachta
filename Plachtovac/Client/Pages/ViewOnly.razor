@@ -13,7 +13,7 @@
     @foreach (var veduci in Rozvrh.Veduci)
     {
         <div class="portrait program-stretnutia">
-            <h1>@Rozvrh.Nazov: @Rozvrh.ZaciatokRozvrhu?.ToString("dd.MM") - @veduci.Prezyvka</h1>
+            <h1>@Rozvrh.Nazov: @Rozvrh.ZaciatokRozvrhu?.ToString("dd.MM") - <strong>@veduci.Prezyvka</strong></h1>
 
             <div class="border-top border-left border-black" style="padding: 0 20px;">
                 <div class="row">
@@ -60,7 +60,7 @@
                             <div class="col col-6 border-0">
                                 <div class="row h-100">
                                     <div class="col col-horizontal">
-                                        <h2>Vedúci družín:</h2>
+                                        <h2>Vedúci družín: </h2>
                                         @foreach (var druzinka in Rozvrh.Veduci.GroupBy(v => v.Druzinka))
                                         {
                                             if (!string.IsNullOrWhiteSpace(druzinka.Key))
@@ -78,7 +78,7 @@
                                             {
                                                 foreach (var kruzok in kruzkyAktivita.Veduci.GroupBy(v => v.Popis))
                                                 {
-                                                    @string.Join(", ", kruzok.Select(v => v.Veduci.Prezyvka))<text>:</text>
+                                                    @string.Join(", ", kruzok.Select(v => v.Veduci.Prezyvka))<text>: </text>
                                                     @kruzok.Key<br/>
                                                 }
                                             }
@@ -104,7 +104,7 @@
                                     var zoznamBonusov = Rozvrh.Veduci.SelectMany(v => v.Ulohy.Select(u => new {v.Prezyvka, u})).GroupBy(x => x.u);
                                     @foreach (var bonus in zoznamBonusov)
                                     {
-                                        @bonus.Key<text>:</text>
+                                        @bonus.Key<text>: </text>
                                         @string.Join(", ", bonus.Select(v => v.Prezyvka))<br/>
                                     }
                                 }

@@ -148,6 +148,7 @@ namespace Plachtovac.Shared.BO
             }
 
             Veduci.Remove(veduci);
+            Veduci = Veduci.OrderBy(v => v.Prezyvka).ToList();
             RozvrhChanged?.Invoke(this, EventArgs.Empty);
         }
     }

@@ -117,6 +117,7 @@
         if (!result.Cancelled)
         {
             PlachtaService.AktualnyRozvrh.Veduci.Add((Veduci)result.Data);
+            PlachtaService.AktualnyRozvrh.Veduci = PlachtaService.AktualnyRozvrh.Veduci.OrderBy(v => v.Prezyvka).ToList();
             StateHasChanged();
         }
     }
@@ -181,11 +182,9 @@
                     var json = Encoding.UTF8.GetString(ms.ToArray());
                     PlachtaService.LoadFromJson(json);
                 }
-                {
-                    var parameters = new ModalParameters();
-                    parameters.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
-                    Modal.Show<YesNoModal>($"Information", parameters);
-                }
+                var parameters2 = new ModalParameters();
+                parameters2.Add(nameof(YesNoModal.Message), "Rozvrh bol nacitany");
+                Modal.Show<YesNoModal>($"Information", parameters2);
 
             }
         }

@@ -2,8 +2,8 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Components.Authorization
 
-<CascadingBlazoredModal>
-    <CascadingAuthenticationState>
+<CascadingAuthenticationState>
+    <CascadingBlazoredModal>
         <Router AppAssembly="@typeof(Program).Assembly">
             <Found Context="routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -14,8 +14,8 @@
                 </LayoutView>
             </NotFound>
         </Router>
-    </CascadingAuthenticationState>
-</CascadingBlazoredModal>    
+    </CascadingBlazoredModal>
+</CascadingAuthenticationState>
 
 @code{
 

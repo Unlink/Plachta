@@ -16,6 +16,8 @@ namespace Plachtovac.Shared.BO
 
         public TimeSpan Trvanie { get; set; }
 
+        public bool VeduciSPopisom { get; set; }
+
         public List<AktivitaVeduci> Veduci
         {
             get => _veduci;
@@ -56,7 +58,7 @@ namespace Plachtovac.Shared.BO
                 var root = doc.DocumentElement;
                 foreach (var item in zoznamVeducich)
                 {
-                    var riadky = item.VygenerujZoznamVeducich(Veduci);
+                    var riadky = item.VygenerujZoznamVeducich(veduci, VeduciSPopisom);
                     foreach (var node in root.ChildNodes)
                     {
                         if (node is XmlElement el && el.Name == "g" &&

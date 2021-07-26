@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Plachtovac.Shared.BO.GraphicsBlocks
 {
@@ -8,6 +9,7 @@ namespace Plachtovac.Shared.BO.GraphicsBlocks
         private List<AktivitaVeduci> _zoznamVeducich;
 
         private int _pocetRiadkov;
+        private bool _veduciSPopisom;
 
         public int PocetRiadkov
         {
@@ -16,33 +18,55 @@ namespace Plachtovac.Shared.BO.GraphicsBlocks
             {
                 if (value == _pocetRiadkov) return;
                 _pocetRiadkov = value;
-                if (_zoznamVeducich != null)
-                {
-                    Text = string.Join('\n', VygenerujZoznamVeducich(_zoznamVeducich));
-                }
+                Text = string.Join('\n', VygenerujZoznamVeducich(NormalizujPocetVeducich(_zoznamVeducich), _veduciSPopisom));
 
                 OnPropertyChanged();
             }
         }
 
-        public void NastavZoznamVeducich(List<AktivitaVeduci> veduci)
+        public void NastavZoznamVeducich(List<AktivitaVeduci> veduci, bool popis = false)
         {
             _zoznamVeducich = veduci;
-            Text = string.Join('\n', VygenerujZoznamVeducich(_zoznamVeducich));
+            _veduciSPopisom = popis;
+            Text = string.Join('\n', VygenerujZoznamVeducich(NormalizujPocetVeducich(_zoznamVeducich), popis));
         }
 
-        public string[] VygenerujZoznamVeducich(List<AktivitaVeduci> veduci)
+        public string[] VygenerujZoznamVeducich(List<AktivitaVeduci> veduci, bool popis = false)
         {
-            var veducichNaRiadok = (int)Math.Ceiling(veduci.Count / (double)PocetRiadkov);
+
+            var veduciText = new List<string>();
+            if (popis)
+            {
+                foreach (var grouping in veduci.GroupBy(v => v.Popis?.Trim() ?? ""))
+                {
+                    if (grouping.Key == "")
+                    {
+                        veduciText.AddRange(grouping.Select(v => v.Veduci.Prezyvka));
+                    }
+                    else
+                    {
+                        var mena = string.Join(" + ", grouping.Select(v => v.Veduci.Prezyvka));
+                        veduciText.Add($"{mena} ({grouping.Key})");
+                    }
+                    
+                }
+            }
+            else
+            {
+                veduciText = veduci.Select(v => v.Veduci.Prezyvka).ToList();
+            }
+
+
+            var veducichNaRiadok = (int)Math.Ceiling(veduciText.Count / (double)PocetRiadkov);
             var riadky = new string[PocetRiadkov];
             for (int i = 0; i < PocetRiadkov; i++)
             {
                 riadky[i] = "";
             }
 
-            for (int i = 0; i < veduci.Count; i++)
+            for (int i = 0; i < veduciText.Count; i++)
             {
-                riadky[i / veducichNaRiadok] += veduci[i].Veduci.Prezyvka + ", ";
+                riadky[i / veducichNaRiadok] += veduciText[i] + ", ";
             }
 
             for (int i = 0; i < PocetRiadkov; i++)
@@ -51,6 +75,18 @@ namespace Plachtovac.Shared.BO.GraphicsBlocks
             }
 
             return riadky;
+        }
+
+        private List<AktivitaVeduci> NormalizujPocetVeducich(List<AktivitaVeduci> veduci)
+        {
+            var result = veduci?.ToList() ?? new List<AktivitaVeduci>();
+            var cnt = 1;
+            while (result.Count < PocetRiadkov)
+            {
+                result.Add(new AktivitaVeduci {Veduci = new Veduci {Prezyvka = $"Veduci{cnt++}"}});
+            }
+
+            return result;
         }
     }
 }

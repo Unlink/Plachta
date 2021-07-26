@@ -17,10 +17,14 @@
 
     private Button SubmitButton;
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         base.OnAfterRender(firstRender);
-        SubmitButton.Focus();
+        if (firstRender)
+        {
+            await Task.Yield();
+            SubmitButton.Focus();
+        }
     }
 
     async Task SubmitForm()

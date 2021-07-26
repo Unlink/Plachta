@@ -25,6 +25,10 @@
             </NumericEdit>
         </Validation>
     </Field>
+
+    <Field>
+        <Check TValue="bool" @bind-Checked="@zobrazeniePopisuVeduceho">Zobraziť popis pri vedúcich</Check>
+    </Field>
 </Validations>
 <Field>
     <FieldLabel>Typ aktivity</FieldLabel>
@@ -61,10 +65,11 @@
             nazov = _sablona?.Nazov;
             typ = _sablona?.Typ;
             trvanieAktivity = (int) Sablona.Trvanie.TotalMinutes;
+            zobrazeniePopisuVeduceho = Sablona.VeduciSPopisom;
         }
     }
 
-    private string[] typyAktivit = {"Krúžok", "Seminár", "Prednáška", "Rozprávanie"};
+    private string[] typyAktivit = {"Krúžok", "Seminár", "Prednáška", "Rozprávanie", "Šport"};
 
     private AktivitaSablona _sablona = new AktivitaSablona();
 
@@ -75,6 +80,8 @@
     private string typ;
 
     private int trvanieAktivity;
+
+    private bool zobrazeniePopisuVeduceho;
 
 
     protected override void OnAfterRender(bool firstRender)
@@ -95,6 +102,7 @@
             Sablona.Trvanie = TimeSpan.FromMinutes(trvanieAktivity);
             Sablona.Veduci.Clear();
             Sablona.Veduci.AddRange(assignForm.GetResult());
+            Sablona.VeduciSPopisom = zobrazeniePopisuVeduceho;
 
             await BlazoredModal.CloseAsync(ModalResult.Ok(Sablona));
         }

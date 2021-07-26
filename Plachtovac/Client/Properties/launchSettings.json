@@ -24,7 +24,7 @@
       },
       "sqlDebugging": false,
       "dotnetRunMessages": "true",
-      "nativeDebugging": true,
+      "nativeDebugging": false,
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "jsWebView2Debugging": false,
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
