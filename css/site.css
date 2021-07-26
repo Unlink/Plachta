@@ -247,6 +247,8 @@ a.dropdown-item:hover {
 ul.sablonyAktivit {
     list-style: none;
     padding: 0;
+    overflow: auto;
+    max-height: 80vh;
 }
 
 
@@ -356,6 +358,7 @@ ul.sablonyAktivit {
     background: white;
     top: -2px;
     left: -2px;
+    z-index: 2;
 }
 
 .aktivitaEndTime {
@@ -461,4 +464,16 @@ ul.sablonyAktivit {
 .blazored-modal-title {
     line-height: 2rem;
     font-size: 1.5rem;
+}
+
+.accordion > .card {
+    border-radius: 5px;
+}
+
+.accordion .card-body {
+    margin: 0 2px;
+}
+
+h4 {
+    font-size: 15pt;
 }
