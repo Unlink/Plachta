@@ -407,23 +407,110 @@ ul.sablonyAktivit {
 
 .portrait h1 {
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+    line-height: 1.1rem;
     margin: 0;
+}
+
+.program-stretnutia-container {
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    display: grid;
+    grid-template-columns: minmax(25%, 40%) auto auto auto auto 33%;
+    grid-template-rows: auto auto auto auto auto auto auto;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "dennyProgram dennyProgram mojProgram mojProgram mojProgram mojProgram"
+        "druzinky druzinky fotka fotka prednasky prednasky"
+        "kruzky kruzky fotka fotka prednasky prednasky"
+        "zoznamNaDonesenie zoznamNaDonesenie zoznamNaDonesenie zoznamNaDonesenie prednasky prednasky"
+        "bonusy bonusy bonusy bonusy bonusy bonusy"
+        "semináre semináre semináre rozpravania rozpravania rozpravania"
+        "dalsiePoznamky dalsiePoznamky dalsiePoznamky dalsiePoznamky dalsiePoznamky dalsiePoznamky";
+}
+
+.program-stretnutia-container > div {
+    padding: 0 15px;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+}
+
+.dennyProgram {
+    grid-area: dennyProgram;
+}
+
+.mojProgram {
+    grid-area: mojProgram;
+}
+
+.mojProgram > div {
+    display: flex;
+    flex-direction: row;
+}
+
+.druzinky {
+    grid-area: druzinky;
+}
+
+.kruzky {
+    grid-area: kruzky;
+}
+
+.zoznamNaDonesenie {
+    grid-area: zoznamNaDonesenie;
+}
+
+.bonusy {
+    grid-area: bonusy;
+}
+
+.fotka {
+    grid-area: fotka;
+}
+
+.fotka img {
+    max-width: 20vw;
+    max-height: 33vh;
+    margin: 5px auto;
+    display: block;
+}
+
+.prednasky {
+    grid-area: prednasky;
+}
+
+.semináre {
+    grid-area: semináre;
+}
+
+.rozpravania {
+    grid-area: rozpravania;
+}
+
+.rozpravania > div {
+    display: flex;
+    flex-direction: row;
+}
+
+.dalsiePoznamky {
+    grid-area: dalsiePoznamky;
+}
+
+
+.program-stretnutia {
+    font-size: 10px;
 }
 
 .program-stretnutia h2 {
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    line-height: 2rem;
     margin: 0;
 }
 
-.program-stretnutia .col, .border-rb {
-    border-right: 1px solid black;
-    border-bottom: 1px solid black;
-}
-
-.program-stretnutia .col-horizontal {
-    flex: 0 0 100%;
+.program-stretnutia ul li {
+    margin: 0;
 }
 
 .program-cas {
@@ -476,4 +563,9 @@ ul.sablonyAktivit {
 
 h4 {
     font-size: 15pt;
+}
+
+
+b, strong {
+    font-weight: 800;
 }
