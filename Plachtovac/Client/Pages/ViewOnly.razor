@@ -103,7 +103,17 @@
                             }
                             <span class="text-nowrap">
                                 <strong>@bonus.Key<text>: </text></strong>
-                                @string.Join(", ", bonus.Select(v => v.Prezyvka).OrderBy(x => x))
+                                @{
+                                    var mena = bonus.Select(v => v.Prezyvka).OrderBy(x => x).ToArray();
+                                    for (int i = 0; i < mena.Length; i++)
+                                    {
+                                        <span class="@((veduci.Prezyvka == mena[i]) ? "zvyraznene-meno" : "")">@mena[i]</span>
+                                        if (i < (mena.Length - 1))
+                                        {
+                                            <text>,&nbsp;</text>
+                                        }
+                                    }
+                                }
                             </span>
                         }
                         <div class="text-center">
@@ -111,7 +121,17 @@
                             {
                                 <span class="text-nowrap">
                                     <strong>@bonus.Key<text>: </text></strong>
-                                    @string.Join(", ", bonus.Select(v => v.Prezyvka).OrderBy(x => x))
+                                    @{
+                                        var mena = bonus.Select(v => v.Prezyvka).OrderBy(x => x).ToArray();
+                                        for (int i = 0; i < mena.Length; i++)
+                                        {
+                                            <span class="@((veduci.Prezyvka == mena[i]) ? "zvyraznene-meno" : "")">@mena[i]</span>
+                                            if (i < (mena.Length - 1))
+                                            {
+                                                <text>,&nbsp;</text>
+                                            }
+                                        }
+                                    }
                                 </span>
                                 <br />
                             }
@@ -142,7 +162,7 @@
                                     blockCounter++;
                                 }
                                 var parts = aktivitaVeduci.Veduci.Popis.Split(" ");
-                                <text>(@parts[0] @blockCounter) <strong>@aktivitaVeduci.Veduci.Veduci.Prezyvka:</strong> @string.Join(" ", parts.Skip(1))</text>
+                                <text><span class="font-italic">(@parts[0] @blockCounter)</span> @aktivitaVeduci.Veduci.Veduci.Prezyvka: <strong>@string.Join(" ", parts.Skip(1))</strong></text>
                                 <br />
                             }
                         }
@@ -176,9 +196,9 @@
                             {
                                 ++blockCounter;
                                 <div>
-                                    @foreach (var rozpravanie in rozpravanieBloky)
+                                    @foreach (var rozpravanie in rozpravanieBloky.GroupBy(r => r.Veduci.Popis))
                                     {
-                                        <text>(@blockCounter) <strong>@rozpravanie.Veduci.Veduci.Prezyvka:</strong> @rozpravanie.Veduci.Popis</text>
+                                        <text>(@blockCounter) @string.Join(", ", rozpravanie.Select(x => x.Veduci.Veduci.Prezyvka)): <strong>@rozpravanie.Key</strong></text>
                                         <br />
                                     }
                                 </div>
@@ -205,6 +225,11 @@
     <style>
         .aktivita.veduci-aktivity > div::before, .den.veduci-dna .title {
             background: rgba(@RGBAVal);
+        }
+
+        .zvyraznene-meno {
+            color: rgb(@(string.Join(",", RGBAVal.Split(",").Take(3))));
+            font-weight: bold;
         }
     </style>
 }
