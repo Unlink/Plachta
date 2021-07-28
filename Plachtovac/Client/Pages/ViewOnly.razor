@@ -1,4 +1,4 @@
-﻿@page "/view"
+﻿@page "/view/{name?}"
 @using System.Globalization
 @using Plachtovac.Client.Services
 @using Plachtovac.Shared.BO
@@ -10,11 +10,11 @@
 
 @if (PlachtaService.AktualnyRozvrh != null)
 {
-    @foreach (var veduci in Rozvrh.Veduci/*.Where(v => v.Prezyvka.Equals("Kubo"))*/)
+    @foreach (var veduci in Rozvrh.Veduci.Where(v => Name == null || v.Prezyvka.Equals(Name)))
     {
         <div class="portrait program-stretnutia">
             <h1>@Rozvrh.Nazov: @Rozvrh.ZaciatokRozvrhu?.ToString("dd.MM") - <strong>@veduci.Prezyvka</strong></h1>
-            
+
             <div class="program-stretnutia-container">
                 <div class="dennyProgram">
                     <h2>Program dňa</h2>
@@ -27,7 +27,7 @@
                             var program = string.Join(" ", parts.Skip(1));
                             <span class="program-cas"><strong>@cas</strong></span>
                             @program
-                            <br/>
+                            <br />
                         }
                     }
                 </div>
@@ -43,8 +43,8 @@
                             <div>
                                 @foreach (var (den, aktivita) in aktivity.Skip(i * maxRows).Take(maxRows))
                                 {
-                                    <span style="margin-right: 3px;">@(DniVTyzdni.GetDen((den.Poradie + PlachtaService.AktualnyRozvrh.Zaciatok) % 7))</span>
-                                    <span style="margin-right: 3px;">@aktivita.Time.ToString("hh\\:mm"):</span>
+                                    <span style="margin-right: 3px;"><strong>@(DniVTyzdni.GetDen((den.Poradie + PlachtaService.AktualnyRozvrh.Zaciatok) % 7))</strong></span>
+                                    <span style="margin-right: 3px;"><strong>@aktivita.Time.ToString("hh\\:mm"):</strong></span>
                                     <span style="margin-right: 3px;">@aktivita.Nazov -</span>
                                     <span style="margin-right: 3px;">@aktivita.GetPopisVeduceho(veduci)</span>
                                     <br>
@@ -60,7 +60,7 @@
                         if (!string.IsNullOrWhiteSpace(druzinka.Key))
                         {
                             <strong>@druzinka.Key<text>: </text></strong>
-                            @string.Join(", ", druzinka.Select(v => v.Prezyvka))<br/>
+                            @string.Join(", ", druzinka.Select(v => v.Prezyvka))<br />
                         }
                     }
                 </div>
@@ -73,16 +73,17 @@
                             foreach (var kruzok in kruzkyAktivita.Veduci.GroupBy(v => v.Popis))
                             {
                                 @string.Join(", ", kruzok.Select(v => v.Veduci.Prezyvka))<text>: </text>
-                                <strong>@kruzok.Key</strong><br/>
+                                <strong>@kruzok.Key</strong><br />
                             }
                         }
                     }
                 </div>
                 <div class="zoznamNaDonesenie">
-                    <h2>čo si mám doniesť (okrem vecí na svoj program)</h2>
+                    <h2>Čo si mám doniesť (okrem vecí na svoj program)</h2>
                     <ul>
                         <li>Čokoládu či koláč 😁</li>
                         <li>Notebook a/alebo gitaru, ak si to na chystačke sľúbil</li>
+                        <li>Knižku na večerné čítanie</li>
                     </ul>
                 </div>
                 <div class="bonusy">
@@ -90,7 +91,7 @@
                     @{
                         var first = true;
                         var zoznamBonusov = Rozvrh.Veduci.SelectMany(v => v.Ulohy.Select(u => new { v.Prezyvka, u })).GroupBy(x => x.u).OrderBy(g => g.Key);
-                        @foreach (var bonus in zoznamBonusov)
+                        @foreach (var bonus in zoznamBonusov.Where(b => !b.Key.StartsWith("nástenka")))
                         {
                             if (first)
                             {
@@ -98,11 +99,23 @@
                             }
                             else
                             {
-                                <text>&nbsp;|&nbsp;</text>
+                                <span> | </span>
                             }
-                            <strong>@bonus.Key<text>: </text></strong>
-                            @string.Join(", ", bonus.Select(v => v.Prezyvka))
+                            <span class="text-nowrap">
+                                <strong>@bonus.Key<text>: </text></strong>
+                                @string.Join(", ", bonus.Select(v => v.Prezyvka).OrderBy(x => x))
+                            </span>
                         }
+                        <div class="text-center">
+                            @foreach (var bonus in zoznamBonusov.Where(b => b.Key.StartsWith("nástenka")))
+                            {
+                                <span class="text-nowrap">
+                                    <strong>@bonus.Key<text>: </text></strong>
+                                    @string.Join(", ", bonus.Select(v => v.Prezyvka).OrderBy(x => x))
+                                </span>
+                                <br />
+                            }
+                        </div>
                     }
                 </div>
                 <div class="fotka">
@@ -114,10 +127,10 @@
                         var prednasky = Rozvrh.Dni
                             .SelectMany(
                                 d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Prednáška").ToList()
-                                    .SelectMany(a => a.Veduci.Select(av => new {Veduci = av, Aktivita = a})));
+                                    .SelectMany(a => a.Veduci.Select(av => new { Veduci = av, Aktivita = a })));
 
                         var blockCounter = 0;
-                        var lastAktivita = (Aktivita) null;
+                        var lastAktivita = (Aktivita)null;
 
                         foreach (var aktivitaVeduci in prednasky)
                         {
@@ -130,7 +143,7 @@
                                 }
                                 var parts = aktivitaVeduci.Veduci.Popis.Split(" ");
                                 <text>(@parts[0] @blockCounter) <strong>@aktivitaVeduci.Veduci.Veduci.Prezyvka:</strong> @string.Join(" ", parts.Skip(1))</text>
-                                <br/>
+                                <br />
                             }
                         }
                     }
@@ -176,11 +189,10 @@
                 <div class="dalsiePoznamky">
                     <h2>A ešte</h2>
                     <ul>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
-                        <li>Pripraviť si večerné čítanie</li>
+                        <li>Každé ráno ísť na rozcvičku a na prednášky ostatných</li>
+                        <li>Cez poobedné voľno čo najmenej chystať hry, a čo najviac byť s účastníkmi</li>
+                        <li>Doniesť bločky, ak niečo na tábor kúpim</li>
+                        <li>Spísať pravidlá každej hry, ktorú chystám</li>
                     </ul>
                 </div>
             </div>
@@ -198,7 +210,10 @@
 }
 
 @code {
-public Rozvrh Rozvrh { get; private set; }
+    [Parameter]
+    public string Name { get; set; }
+
+    public Rozvrh Rozvrh { get; private set; }
     public string RGBAVal { get; set; } = "100,100,100,0.2";
 
     protected override void OnInitialized()
@@ -229,4 +244,4 @@ public Rozvrh Rozvrh { get; private set; }
         }
     }
 
-    }
+}

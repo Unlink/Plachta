@@ -117,7 +117,7 @@ a.dropdown-item:hover {
     color: #34495e;
     font-size: small;
     padding: 0 10px;
-    width: 200px;
+    width: 270px;
 }
 
 .dropdown-info .form-control {
@@ -447,6 +447,7 @@ ul.sablonyAktivit {
 .mojProgram > div {
     display: flex;
     flex-direction: row;
+    gap: 10px;
 }
 
 .druzinky {
@@ -491,6 +492,7 @@ ul.sablonyAktivit {
 .rozpravania > div {
     display: flex;
     flex-direction: row;
+    gap: 10px;
 }
 
 .dalsiePoznamky {
