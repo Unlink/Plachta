@@ -37,3 +37,14 @@ body {
         width: 296mm;
         transform: rotate(90deg) translate(5mm, -214mm);
     }
+
+
+.aktivitaTime {
+    padding: 1px;
+    font-size: 6pt;
+}
+
+.aktivitaEndTime {
+    padding: 1px;
+    font-size: 6pt;
+}
