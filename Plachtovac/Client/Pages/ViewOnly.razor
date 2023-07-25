@@ -91,7 +91,7 @@
                     @{
                         var first = true;
                         var zoznamBonusov = Rozvrh.Veduci.SelectMany(v => v.Ulohy.Select(u => new { v.Prezyvka, u })).GroupBy(x => x.u).OrderBy(g => g.Key);
-                        @foreach (var bonus in zoznamBonusov.Where(b => !b.Key.StartsWith("nástenka")))
+                        @foreach (var bonus in zoznamBonusov.Where(b => !b.Key.ToLower().StartsWith("nástenka")))
                         {
                             if (first)
                             {
@@ -117,7 +117,7 @@
                             </span>
                         }
                         <div class="text-center">
-                            @foreach (var bonus in zoznamBonusov.Where(b => b.Key.StartsWith("nástenka")))
+                            @foreach (var bonus in zoznamBonusov.Where(b => b.Key.ToLower().StartsWith("nástenka")))
                             {
                                 <span class="text-nowrap">
                                     <strong>@bonus.Key<text>: </text></strong>
