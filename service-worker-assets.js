@@ -45,7 +45,7 @@
       "url": "css\/print.css"
     },
     {
-      "hash": "sha256-i3G8RJccP1mSrFsmAe0EODuyeN6AaOGwaPG5fZY1jxo=",
+      "hash": "sha256-rQxumILtkexlF9i4QasBYjN3lH0CWgtoqgNHiMKfT7E=",
       "url": "css\/site.css"
     },
     {
@@ -377,7 +377,7 @@
       "url": "_framework\/Plachtovac.Shared.dll"
     },
     {
-      "hash": "sha256-JEr56Q0CRsNDor5dsinGqWfegHhewMY\/d0XDhpy4OjE=",
+      "hash": "sha256-Lr4hOqsRx9Fxb\/L5SBIrw2+lP5yuu89VJLn7IbR4nV0=",
       "url": "_framework\/Plachtovac.Client.dll"
     },
     {
@@ -557,7 +557,7 @@
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
-      "hash": "sha256-LNLvh40u\/IVSgPTJNe9YQWfjo1RqSTJbN6myPSGOgRA=",
+      "hash": "sha256-q4breyy5j9njwfzfm5Rnhq\/Z25GT7JPONVlj4Eui60Y=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -565,5 +565,5 @@
       "url": "_framework\/blazor.webassembly.js"
     }
   ],
-  "version": "krRbk+Gu"
+  "version": "LJblRvqW"
 };
