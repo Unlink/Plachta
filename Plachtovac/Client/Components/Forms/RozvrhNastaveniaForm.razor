@@ -46,6 +46,16 @@
     <MemoEdit @bind-Text="@Program" Placeholder="8:00 nejaky program&#10;10:00 iny&#10;15:00 posledny" />
 </Field>
 
+<Field>
+    <FieldLabel>Čo doniest</FieldLabel>
+    <MemoEdit @bind-Text="@CoDoniest" />
+</Field>
+
+<Field>
+    <FieldLabel>A ešte</FieldLabel>
+    <MemoEdit @bind-Text="@AEste" />
+</Field>
+
 @if (errors != null)
 {
     <Alert Color="Color.Danger">
@@ -72,6 +82,8 @@
     private int dni;
 
     public string Program { get; set; }
+    public string CoDoniest { get; set; }
+    public string AEste { get; set; }
     public string Farba { get; set; }
 
     private string dniStr
@@ -120,6 +132,8 @@
             _zaciatokDna = Rozvrh.ZaciatokDna.ToString(@"hh\:mm");
             _koniecDna = Rozvrh.KoniecDna.ToString(@"hh\:mm");
             Program = Rozvrh.Program;
+            CoDoniest = Rozvrh.CoDoniest;
+            AEste = Rozvrh.AEste;
             Farba = Rozvrh.Farba;
             StateHasChanged();
         }
@@ -148,6 +162,8 @@
             Rozvrh.KoniecDna = ParseTime(_koniecDna);
             Rozvrh.Program = Program;
             Rozvrh.Farba = Farba;
+            Rozvrh.CoDoniest = CoDoniest;
+            Rozvrh.AEste = AEste;
             await BlazoredModal.CloseAsync(ModalResult.Ok(Rozvrh));
         }
     }

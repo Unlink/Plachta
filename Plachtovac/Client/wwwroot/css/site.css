@@ -462,7 +462,7 @@ ul.sablonyAktivit {
     grid-area: zoznamNaDonesenie;
 }
 
-.zoznamNaDonesenie ul {
+ul.two-collumns {
     columns: 2;
 }
 

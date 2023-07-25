@@ -80,16 +80,10 @@
                 </div>
                 <div class="zoznamNaDonesenie">
                     <h2>Čo si mám doniesť (okrem vecí na svoj program)</h2>
-                    <ul>
-                        <li>Čokoládu či koláč 😁</li>
-                        <li>Notebook a/alebo gitaru, ak si to na chystačke sľúbil</li>
-                        <li>Knižku na večerné čítanie</li>
-                        <li>Hru na poobedné voľno</li>
-                        <li>Noviny na mokré topánky</li>
-                        <li>Prezuvky</li>
-                        <li>Čelovky/baterky</li>
-                        <li>Pokrývka hlavy</li>
-                        <li>Dlhé gate</li>
+                    <ul class="@(Rozvrh.CoDoniest.Split("\n").Length > 5 ? "two-collumns" : "")">
+                        @foreach (var co in Rozvrh.CoDoniest.Split("\n")) {
+                            <li>@co</li>
+                        }
                     </ul>
                 </div>
                 <div class="bonusy">
@@ -214,11 +208,10 @@
                 </div>
                 <div class="dalsiePoznamky">
                     <h2>A ešte</h2>
-                    <ul>
-                        <li>Každé ráno ísť na rozcvičku a na prednášky ostatných</li>
-                        <li>Cez poobedné voľno čo najmenej chystať hry, a čo najviac byť s účastníkmi</li>
-                        <li>Doniesť bločky, ak niečo na tábor kúpim</li>
-                        <li>Spísať pravidlá každej hry, ktorú chystám</li>
+                    <ul class="@(Rozvrh.AEste.Split("\n").Length > 5 ? "two-collumns" : "")">
+                        @foreach (var co in Rozvrh.AEste.Split("\n")) {
+                            <li>@co</li>
+                        }
                     </ul>
                 </div>
             </div>
