@@ -36,7 +36,7 @@
                     <div>
                         @{
                             var aktivity = Rozvrh.Dni.SelectMany(d => d.Aktivity.Where(a => a.JeVeduci(veduci)).Select(a => (d, a)));
-                            var maxRows = 15;
+                            var maxRows = aktivity.Count() > 15 ? ((aktivity.Count() / 2) + 1) : 15;
                         }
                         @for (var i = 0; i <= aktivity.Count() / maxRows; i++)
                         {
