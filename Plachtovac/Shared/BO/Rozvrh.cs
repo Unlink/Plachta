@@ -41,6 +41,9 @@ namespace Plachtovac.Shared.BO
         public ElementSize CustomGraphicsCanvasSize { get; set; }
         public string Program { get; set; }
 
+        public string CoDoniest { get; set; } = "Čokoládu či koláč 😁\nNotebook a/alebo gitaru, ak si to na chystačke sľúbil\nKnižku na večerné čítanie";
+        public string AEste { get; set; } = "Každé ráno ísť na rozcvičku a na prednášky ostatných\nCez poobedné voľno čo najmenej chystať hry, a čo najviac byť s účastníkmi\nDoniesť bločky, ak niečo na tábor kúpim\nSpísať pravidlá každej hry, ktorú chystám";
+
         public string Farba { get; set; }
 
         public event EventHandler RozvrhChanged; 

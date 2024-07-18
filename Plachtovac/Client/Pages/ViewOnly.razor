@@ -36,7 +36,7 @@
                     <div>
                         @{
                             var aktivity = Rozvrh.Dni.SelectMany(d => d.Aktivity.Where(a => a.JeVeduci(veduci)).Select(a => (d, a)));
-                            var maxRows = 15;
+                            var maxRows = aktivity.Count() > 15 ? ((aktivity.Count() / 2) + 1) : 15;
                         }
                         @for (var i = 0; i <= aktivity.Count() / maxRows; i++)
                         {
@@ -80,10 +80,10 @@
                 </div>
                 <div class="zoznamNaDonesenie">
                     <h2>Čo si mám doniesť (okrem vecí na svoj program)</h2>
-                    <ul>
-                        <li>Čokoládu či koláč 😁</li>
-                        <li>Notebook a/alebo gitaru, ak si to na chystačke sľúbil</li>
-                        <li>Knižku na večerné čítanie</li>
+                    <ul class="@(Rozvrh.CoDoniest.Split("\n").Length > 5 ? "two-collumns" : "")">
+                        @foreach (var co in Rozvrh.CoDoniest.Split("\n")) {
+                            <li>@co</li>
+                        }
                     </ul>
                 </div>
                 <div class="bonusy">
@@ -91,7 +91,7 @@
                     @{
                         var first = true;
                         var zoznamBonusov = Rozvrh.Veduci.SelectMany(v => v.Ulohy.Select(u => new { v.Prezyvka, u })).GroupBy(x => x.u).OrderBy(g => g.Key);
-                        @foreach (var bonus in zoznamBonusov.Where(b => !b.Key.StartsWith("nástenka")))
+                        @foreach (var bonus in zoznamBonusov.Where(b => !b.Key.ToLower().StartsWith("nástenka")))
                         {
                             if (first)
                             {
@@ -117,7 +117,7 @@
                             </span>
                         }
                         <div class="text-center">
-                            @foreach (var bonus in zoznamBonusov.Where(b => b.Key.StartsWith("nástenka")))
+                            @foreach (var bonus in zoznamBonusov.Where(b => b.Key.ToLower().StartsWith("nástenka")))
                             {
                                 <span class="text-nowrap">
                                     <strong>@bonus.Key<text>: </text></strong>
@@ -210,11 +210,10 @@
                 </div>
                 <div class="dalsiePoznamky">
                     <h2>A ešte</h2>
-                    <ul>
-                        <li>Každé ráno ísť na rozcvičku a na prednášky ostatných</li>
-                        <li>Cez poobedné voľno čo najmenej chystať hry, a čo najviac byť s účastníkmi</li>
-                        <li>Doniesť bločky, ak niečo na tábor kúpim</li>
-                        <li>Spísať pravidlá každej hry, ktorú chystám</li>
+                    <ul class="@(Rozvrh.AEste.Split("\n").Length > 5 ? "two-collumns" : "")">
+                        @foreach (var co in Rozvrh.AEste.Split("\n")) {
+                            <li>@co</li>
+                        }
                     </ul>
                 </div>
             </div>

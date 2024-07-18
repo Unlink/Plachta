@@ -462,6 +462,10 @@ ul.sablonyAktivit {
     grid-area: zoznamNaDonesenie;
 }
 
+ul.two-collumns {
+    columns: 2;
+}
+
 .bonusy {
     grid-area: bonusy;
 }
