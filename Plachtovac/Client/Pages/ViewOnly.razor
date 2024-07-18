@@ -147,6 +147,7 @@
                         var prednasky = Rozvrh.Dni
                             .SelectMany(
                                 d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Prednáška").ToList()
+                                    .Where(a => a.Veduci != null)
                                     .SelectMany(a => a.Veduci.Select(av => new { Veduci = av, Aktivita = a })));
 
                         var blockCounter = 0;
@@ -189,6 +190,7 @@
                             var rozpravania = Rozvrh.Dni
                                 .SelectMany(
                                     d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Rozprávanie")
+                                        .Where(a => a.Veduci != null)
                                         .SelectMany((a, i) => a.Veduci.Select(av => new { Veduci = av, Aktivita = a })));
 
                             blockCounter = 0;
