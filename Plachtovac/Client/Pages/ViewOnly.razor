@@ -153,8 +153,7 @@
                                 .SelectMany(
                                     d => d.Aktivity.Where(a => a.Sablona.Typ == "Prednáška").ToList()
                                         .Where(a => (a.Veduci == null || !a.Veduci.Any()) && a.Sablona.Veduci != null && a.Sablona.Veduci.Any())
-                                        .SelectMany(a => a.Sablona.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d }))
-                                ))
+                                        .SelectMany(a => a.Sablona.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d }))))
                                 //.GroupBy(x => x.Aktivita.Sablona))
                                 //.Select(x => x.First()))
                             .OrderBy(x => x.Den.Poradie)
@@ -206,8 +205,7 @@
                                     .SelectMany(
                                         d => d.Aktivity.Where(a => a.Sablona.Typ == "Rozprávanie").ToList()
                                             .Where(a => (a.Veduci == null || !a.Veduci.Any()) && a.Sablona.Veduci != null && a.Sablona.Veduci.Any())
-                                            .SelectMany(a => a.Sablona.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d })))
-                                        )
+                                            .SelectMany(a => a.Sablona.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d }))))
                                     //.GroupBy(x => x.Aktivita.Sablona)
                                     //.Select(x => x.First()))
                                 .OrderBy(x => x.Den.Poradie)
