@@ -146,9 +146,18 @@
                     @{
                         var prednasky = Rozvrh.Dni
                             .SelectMany(
-                                d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Prednáška").ToList()
-                                    .Where(a => a.Veduci != null)
-                                    .SelectMany(a => a.Veduci.Select(av => new { Veduci = av, Aktivita = a })));
+                                d => d.Aktivity.Where(a => a.Sablona.Typ == "Prednáška").ToList()
+                                    .Where(a => a.Veduci != null && a.Veduci.Any())
+                                    .SelectMany(a => a.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d })))
+                            .Concat(Rozvrh.Dni
+                                .SelectMany(
+                                    d => d.Aktivity.Where(a => a.Sablona.Typ == "Prednáška").ToList()
+                                        .Where(a => (a.Veduci == null || !a.Veduci.Any()) && a.Sablona.Veduci != null && a.Sablona.Veduci.Any())
+                                        .SelectMany(a => a.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d }))
+                                .GroupBy(x => x.Aktivita.Sablona))
+                                .Select(x => x.First()))
+                            .OrderBy(x => x.Den.Poradie)
+                            .ThenBy(x => x.Aktivita.Time);
 
                         var blockCounter = 0;
                         var lastAktivita = (Aktivita)null;
@@ -189,9 +198,21 @@
                         @{
                             var rozpravania = Rozvrh.Dni
                                 .SelectMany(
-                                    d => d.Aktivity.OrderBy(a => a.Time).Where(a => a.Sablona.Typ == "Rozprávanie")
-                                        .Where(a => a.Veduci != null)
-                                        .SelectMany((a, i) => a.Veduci.Select(av => new { Veduci = av, Aktivita = a })));
+                                    d => d.Aktivity.Where(a => a.Sablona.Typ == "Rozprávanie").ToList()
+                                        .Where(a => a.Veduci != null && a.Veduci.Any())
+                                        .SelectMany(a => a.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d })))
+                                .Concat(Rozvrh.Dni
+                                    .SelectMany(
+                                        d => d.Aktivity.Where(a => a.Sablona.Typ == "Rozprávanie").ToList()
+                                            .Where(a => (a.Veduci == null || !a.Veduci.Any()) && a.Sablona.Veduci != null && a.Sablona.Veduci.Any())
+                                            .SelectMany(a => a.Veduci.Select(av => new { Veduci = av, Aktivita = a, Den = d })))
+                                    .GroupBy(x => x.Aktivita.Sablona)
+                                    .Select(x => x.First()))
+                                .OrderBy(x => x.Den.Poradie)
+                                .ThenBy(x => x.Aktivita.Time); 
+                                
+                                
+
 
                             blockCounter = 0;
                             foreach (var rozpravanieBloky in rozpravania.GroupBy(x => x.Aktivita))
