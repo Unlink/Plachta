@@ -377,7 +377,7 @@
       "url": "_framework\/Plachtovac.Shared.dll"
     },
     {
-      "hash": "sha256-4+DCmGCv1y6ey0E3VXDmx5Pu835ZdCUZLB2Yu58ziIU=",
+      "hash": "sha256-I+N0edGvn4euYIwXgKX9266DDWC0kP24Qxj2loQv3Eo=",
       "url": "_framework\/Plachtovac.Client.dll"
     },
     {
@@ -457,7 +457,7 @@
       "url": "_framework\/System.Linq.Queryable.dll"
     },
     {
-      "hash": "sha256-fBDrcclhYNE8s2eyMWy3VGH\/BwUkG5izXbjDJ4atEiE=",
+      "hash": "sha256-wi7s0KYGGtEId+KyztbWsnYnf1I1l3qdOxdk1robhH4=",
       "url": "_framework\/System.Linq.dll"
     },
     {
@@ -557,7 +557,7 @@
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
-      "hash": "sha256-JHYTz50C\/relgEzf2wW0IXuBbtkk0l\/RcV\/YoDp\/UrE=",
+      "hash": "sha256-moRLVTsY2ydHR5vGe\/DrsMJ7+uUlxPKAbxJ+MZWA4hs=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -565,5 +565,5 @@
       "url": "_framework\/blazor.webassembly.js"
     }
   ],
-  "version": "Vj8tA7bV"
+  "version": "LD6BGAp4"
 };
